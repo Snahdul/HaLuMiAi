@@ -1,32 +1,18 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace ChatConversationControl.Messages;
 
-/// <summary>
-/// Represents a message item with text and color properties.
-/// </summary>
 public partial class MessageItem : ObservableObject
 {
     private readonly StringBuilder _textBuilder = new();
 
-    [ObservableProperty]
-    private string _colorString = "";
+    [JsonPropertyName("colorString")]
+    public string ColorString { get; set; } = "";
 
-    /// <summary>
-    /// Gets or sets the text of the message.
-    /// </summary>
-    public string Text
-    {
-        get => _textBuilder.ToString();
-        set
-        {
-            if (_textBuilder.ToString() == value) return;
-            _textBuilder.Clear();
-            _textBuilder.Append(value);
-            OnPropertyChanged();
-        }
-    }
+    [JsonPropertyName("text")]
+    public string Text { get; set; }
 
     /// <summary>
     /// Appends additional text to the existing message text.
@@ -35,7 +21,7 @@ public partial class MessageItem : ObservableObject
     public void AppendText(string additionalText)
     {
         _textBuilder.Append(additionalText);
-        OnPropertyChanged(nameof(Text));
+        Text = _textBuilder.ToString();
     }
 
     /// <summary>
@@ -45,6 +31,6 @@ public partial class MessageItem : ObservableObject
     public void AppendLineText(string additionalText)
     {
         _textBuilder.AppendLine(additionalText);
-        OnPropertyChanged(nameof(Text));
+        Text = _textBuilder.ToString();
     }
 }

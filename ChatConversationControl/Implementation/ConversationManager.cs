@@ -1,7 +1,8 @@
 ﻿using ChatConversationControl.Contracts;
 using ChatConversationControl.Messages;
+using CommunityToolkit.Diagnostics;
 using System.Collections.ObjectModel;
-using System.IO;
+using System.IO.Abstractions;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -15,11 +16,22 @@ public abstract class ConversationManager : IConversationManager
     private const string FileDialogFilter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
     private const string DefaultFileName = "Conversation.json";
     private const string DefaultFileExtension = ".json";
+    private readonly IFileSystem _fileSystem;
+    private readonly IFileDialogService _fileDialogService;
+
+    protected ConversationManager(IFileSystem fileSystem, IFileDialogService fileDialogService)
+    {
+        Guard.IsNotNull(fileSystem);
+        Guard.IsNotNull(fileDialogService);
+
+        _fileSystem = fileSystem;
+        _fileDialogService = fileDialogService;
+    }
 
     /// <summary>
     /// Gets the list of conversation messages.
     /// </summary>
-    public ObservableCollection<MessageItem> ConversationList { get; } = [];
+    public ObservableCollection<MessageItem> ConversationList { get; } = new();
 
     /// <summary>
     /// Saves the conversation to a file.
@@ -28,13 +40,7 @@ public abstract class ConversationManager : IConversationManager
     /// <exception cref="OperationCanceledException">The cancellation token was canceled. This exception is stored into the returned task.</exception>
     public virtual async Task SaveConversation()
     {
-        var saveFileDialog = new Microsoft.Win32.SaveFileDialog
-        {
-            Filter = FileDialogFilter,
-            DefaultExt = DefaultFileExtension,
-            FileName = DefaultFileName
-        };
-
+        var saveFileDialog = _fileDialogService.CreateSaveFileDialog();
         if (saveFileDialog.ShowDialog() == true)
         {
             var filePath = saveFileDialog.FileName;
@@ -43,8 +49,8 @@ public abstract class ConversationManager : IConversationManager
                 WriteIndented = true,
                 ReferenceHandler = ReferenceHandler.Preserve
             };
-            var json = JsonSerializer.Serialize(ConversationList, options);
-            await File.WriteAllTextAsync(filePath, json);
+            var jsonContent = JsonSerializer.Serialize(ConversationList, options);
+            await _fileSystem.File.WriteAllTextAsync(filePath, jsonContent);
         }
     }
 
@@ -57,25 +63,20 @@ public abstract class ConversationManager : IConversationManager
     /// <exception cref="NotSupportedException">There is no compatible <see cref="System.Text.Json.Serialization.JsonConverter" /> for <see cref="ObservableCollection{MessageItem}" /> or its serializable members.</exception>
     public virtual async Task LoadConversation()
     {
-        var openFileDialog = new Microsoft.Win32.OpenFileDialog
+        var openFileDialog = _fileDialogService.CreateOpenFileDialog();
+        if (openFileDialog.ShowDialog() == true)
         {
-            InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-            Filter = FileDialogFilter,
-            DefaultExt = DefaultFileExtension
-        };
+            var filePath = openFileDialog.FileName;
+            var jsonContent = await _fileSystem.File.ReadAllTextAsync(filePath);
 
-        if (openFileDialog.ShowDialog() != true || !File.Exists(openFileDialog.FileName))
-        {
-            return;
-        }
+            var options = new JsonSerializerOptions
+            {
+                ReferenceHandler = ReferenceHandler.Preserve // Include this
+            };
+            var conversationList = JsonSerializer.Deserialize<ObservableCollection<MessageItem>>(jsonContent, options);
 
-        var filePath = openFileDialog.FileName;
-        var json = await File.ReadAllTextAsync(filePath);
-        var messages = JsonSerializer.Deserialize<ObservableCollection<MessageItem>>(json);
-        if (messages != null)
-        {
             ConversationList.Clear();
-            foreach (var message in messages)
+            foreach (var message in conversationList)
             {
                 ConversationList.Add(message);
             }
