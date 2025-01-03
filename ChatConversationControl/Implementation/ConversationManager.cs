@@ -12,6 +12,10 @@ namespace ChatConversationControl.Implementation;
 /// </summary>
 public abstract class ConversationManager : IConversationManager
 {
+    private const string FileDialogFilter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
+    private const string DefaultFileName = "Conversation.json";
+    private const string DefaultFileExtension = ".json";
+
     /// <summary>
     /// Gets the list of conversation messages.
     /// </summary>
@@ -26,9 +30,9 @@ public abstract class ConversationManager : IConversationManager
     {
         var saveFileDialog = new Microsoft.Win32.SaveFileDialog
         {
-            Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*",
-            DefaultExt = ".txt",
-            FileName = "Conversation.txt"
+            Filter = FileDialogFilter,
+            DefaultExt = DefaultFileExtension,
+            FileName = DefaultFileName
         };
 
         if (saveFileDialog.ShowDialog() == true)
@@ -55,22 +59,25 @@ public abstract class ConversationManager : IConversationManager
     {
         var openFileDialog = new Microsoft.Win32.OpenFileDialog
         {
-            Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*",
-            DefaultExt = ".txt"
+            InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+            Filter = FileDialogFilter,
+            DefaultExt = DefaultFileExtension
         };
 
-        if (openFileDialog.ShowDialog() == true)
+        if (openFileDialog.ShowDialog() != true || !File.Exists(openFileDialog.FileName))
         {
-            var filePath = openFileDialog.FileName;
-            var json = await File.ReadAllTextAsync(filePath);
-            var messages = JsonSerializer.Deserialize<ObservableCollection<MessageItem>>(json);
-            if (messages != null)
+            return;
+        }
+
+        var filePath = openFileDialog.FileName;
+        var json = await File.ReadAllTextAsync(filePath);
+        var messages = JsonSerializer.Deserialize<ObservableCollection<MessageItem>>(json);
+        if (messages != null)
+        {
+            ConversationList.Clear();
+            foreach (var message in messages)
             {
-                ConversationList.Clear();
-                foreach (var message in messages)
-                {
-                    ConversationList.Add(message);
-                }
+                ConversationList.Add(message);
             }
         }
     }
