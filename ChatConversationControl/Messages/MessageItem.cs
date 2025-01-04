@@ -12,7 +12,7 @@ public partial class MessageItem : ObservableObject
     public string ColorString { get; set; } = "";
 
     [JsonPropertyName("text")]
-    public string Text { get; set; }
+    public string Text { get; set; } = "";
 
     /// <summary>
     /// Appends additional text to the existing message text.

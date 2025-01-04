@@ -29,8 +29,12 @@ Ensure you have the following installed:
     
 2. Open the solution in Visual Studio 2022.
 
-3. Restore the NuGet packages:
+3. Restore the NuGet packages: `dotnet restore`
+
+4. Install the WPF UI library: `dotnet add package Wpf-Ui`
+        
     
+
 ### Building the Project
 
 To build the project, open the solution in Visual Studio and build the solution using `Ctrl+Shift+B` or by selecting `Build > Build Solution` from the menu.
@@ -60,16 +64,15 @@ To run the application, press `F5` or select `Debug > Start Debugging` from the 
 
 ## Commands
 
+- `SendPromptAsyncCommand`: Command to send a chat prompt.
+- `SendPromptStreamAsyncCommand`: Command to send a chat prompt with streaming response.
 - `SaveConversationAsyncCommand`: Command to save the conversation.
 - `ClearConversationAsyncCommand`: Command to clear the conversation.
 - `LoadConversationAsyncCommand`: Command to load a conversation.
-- `SendPromptAsyncCommand`: Command to send a chat prompt.
-- `SendPromptStreamAsyncCommand`: Command to send a chat prompt with streaming response.
 
 ## Testing
 
-The project uses xUnit for unit testing. To run the tests, use the Test Explorer in Visual Studio or run the following command:
-
+The project uses xUnit for unit testing. To run the tests, use the Test Explorer in Visual Studio or run the following command: `dotnet test`.
 
 ## Contributing
 
@@ -83,4 +86,6 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 - [CommunityToolkit](https://github.com/CommunityToolkit/dotnet)
 - [Microsoft.Extensions.AI](https://github.com/dotnet/ai-samples/blob/main/src/microsoft-extensions-ai/README.md)
+- [WPF UI](https://github.com/lepoco/wpfui)
+
 
