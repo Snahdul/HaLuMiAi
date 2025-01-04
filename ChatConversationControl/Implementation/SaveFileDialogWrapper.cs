@@ -1,6 +1,7 @@
-﻿using Microsoft.Win32;
+﻿using ChatConversationControl.Contracts;
+using Microsoft.Win32;
 
-namespace ChatConversationControl.Contracts;
+namespace ChatConversationControl.Implementation;
 
 /// <summary>
 /// Wraps the <see cref="SaveFileDialog"/> to implement the <see cref="ISaveFileDialog"/> interface.

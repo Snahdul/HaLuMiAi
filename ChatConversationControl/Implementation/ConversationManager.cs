@@ -13,9 +13,6 @@ namespace ChatConversationControl.Implementation;
 /// </summary>
 public abstract class ConversationManager : IConversationManager
 {
-    private const string FileDialogFilter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
-    private const string DefaultFileName = "Conversation.json";
-    private const string DefaultFileExtension = ".json";
     private readonly IFileSystem _fileSystem;
     private readonly IFileDialogService _fileDialogService;
 
@@ -39,10 +36,7 @@ public abstract class ConversationManager : IConversationManager
     /// <inheritdoc />
     public virtual async Task SaveConversation()
     {
-        ISaveFileDialog saveFileDialog = _fileDialogService.CreateSaveFileDialog();
-        saveFileDialog.FileDialogFilter = FileDialogFilter;
-        saveFileDialog.DefaultFileExtension = DefaultFileExtension;
-        saveFileDialog.FileName = DefaultFileName;
+        var saveFileDialog = _fileDialogService.CreateSaveFileDialog();
 
         if (saveFileDialog.ShowDialog())
         {
@@ -61,9 +55,6 @@ public abstract class ConversationManager : IConversationManager
     public virtual async Task LoadConversation()
     {
         var openFileDialog = _fileDialogService.CreateOpenFileDialog();
-        openFileDialog.FileDialogFilter = FileDialogFilter;
-        openFileDialog.DefaultFileExtension = DefaultFileExtension;
-        openFileDialog.FileName = DefaultFileName;
 
         if (openFileDialog.ShowDialog())
         {
