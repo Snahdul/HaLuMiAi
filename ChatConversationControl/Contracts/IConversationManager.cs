@@ -3,6 +3,9 @@ using System.Collections.ObjectModel;
 
 namespace ChatConversationControl.Contracts;
 
+/// <summary>
+/// Defines the contract for managing conversations.
+/// </summary>
 public interface IConversationManager
 {
     /// <summary>
@@ -21,5 +24,8 @@ public interface IConversationManager
     /// <summary>
     /// Saves the conversation.
     /// </summary>
+    /// <returns>
+    /// A task that represents the asynchronous operation.
+    /// </returns>
     Task SaveConversation();
 }

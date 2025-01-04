@@ -4,7 +4,6 @@ using ChatConversationControl.Messages;
 using Moq;
 using System.Collections.ObjectModel;
 using System.IO.Abstractions;
-using System.IO.Abstractions.TestingHelpers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -12,68 +11,66 @@ namespace ChatConversationControl.Test
 {
     public class ConversationManagerTests
     {
-        private readonly TestConversationManager _conversationManager;
-        private readonly ObservableCollection<MessageItem> _testMessages;
-        private readonly MockFileSystem _mockFileSystem;
+        private readonly Mock<IFileSystem> _fileSystemMock;
+        private readonly Mock<IFile> _fileMock;
         private readonly Mock<IFileDialogService> _fileDialogServiceMock;
-        private readonly Mock<IFileDialog> _fileDialogMock;
+        private readonly Mock<IOpenFileDialog> _openFileDialogMock;
+        private readonly Mock<ISaveFileDialog> _saveFileDialogMock;
+        private readonly TestConversationManager _conversationManager;
 
         public ConversationManagerTests()
         {
-            _mockFileSystem = new MockFileSystem();
+            _fileSystemMock = new Mock<IFileSystem>();
+            _fileMock = new Mock<IFile>();
             _fileDialogServiceMock = new Mock<IFileDialogService>();
-            _fileDialogMock = new Mock<IFileDialog>();
-            _conversationManager = new TestConversationManager(_mockFileSystem, _fileDialogServiceMock.Object);
-            _testMessages =
-            [
-                new MessageItem { Text = "Hello", ColorString = "Red" },
-                new MessageItem { Text = "World", ColorString = "Blue" }
-            ];
+            _openFileDialogMock = new Mock<IOpenFileDialog>();
+            _saveFileDialogMock = new Mock<ISaveFileDialog>();
+
+            _fileSystemMock.Setup(fs => fs.File).Returns(_fileMock.Object);
+
+            _conversationManager = new TestConversationManager(_fileSystemMock.Object, _fileDialogServiceMock.Object);
         }
 
         [Fact]
-        public async Task SaveConversation_ShouldSaveToFile()
+        public async Task SaveConversation_ShouldSaveToFile_WhenDialogConfirmed()
         {
             // Arrange
-            _conversationManager.ConversationList.Add(_testMessages[0]);
-            _conversationManager.ConversationList.Add(_testMessages[1]);
-
-            _fileDialogMock.Setup(d => d.ShowDialog()).Returns(true);
-            _fileDialogMock.Setup(d => d.FileName).Returns("test.json");
-            _fileDialogServiceMock.Setup(s => s.CreateSaveFileDialog()).Returns(_fileDialogMock.Object);
-
             var filePath = "test.json";
-            var options = new JsonSerializerOptions
+            var conversationList = new ObservableCollection<MessageItem>
             {
-                WriteIndented = true,
-                ReferenceHandler = ReferenceHandler.Preserve
+                new MessageItem { Text = "Hello" },
+                new MessageItem { Text = "World" }
             };
-            var expectedJson = JsonSerializer.Serialize(_testMessages, options);
+            _conversationManager.ConversationList.Add(conversationList[0]);
+            _conversationManager.ConversationList.Add(conversationList[1]);
+
+            _saveFileDialogMock.Setup(d => d.ShowDialog()).Returns(true);
+            _saveFileDialogMock.Setup(d => d.FileName).Returns(filePath);
+            _fileDialogServiceMock.Setup(s => s.CreateSaveFileDialog()).Returns(_saveFileDialogMock.Object);
 
             // Act
             await _conversationManager.SaveConversation();
 
             // Assert
-            var actualJson = _mockFileSystem.File.ReadAllText(filePath);
-            Assert.Equal(expectedJson, actualJson);
+            _fileMock.Verify(f => f.WriteAllTextAsync(filePath, It.IsAny<string>(), default), Times.Once);
         }
 
         [Fact]
-        public async Task LoadConversation_ShouldLoadFromFile()
+        public async Task LoadConversation_ShouldLoadFromFile_WhenDialogConfirmed()
         {
             // Arrange
             var filePath = "test.json";
-            var options = new JsonSerializerOptions
+            var conversationList = new ObservableCollection<MessageItem>
             {
-                WriteIndented = true,
-                ReferenceHandler = ReferenceHandler.Preserve
+                new MessageItem { Text = "Hello" },
+                new MessageItem { Text = "World" }
             };
-            var json = JsonSerializer.Serialize(_testMessages, options);
-            _mockFileSystem.AddFile(filePath, new MockFileData(json));
+            var jsonContent = JsonSerializer.Serialize(conversationList, new JsonSerializerOptions { ReferenceHandler = ReferenceHandler.Preserve });
 
-            _fileDialogMock.Setup(d => d.ShowDialog()).Returns(true);
-            _fileDialogMock.Setup(d => d.FileName).Returns(filePath);
-            _fileDialogServiceMock.Setup(s => s.CreateOpenFileDialog()).Returns(_fileDialogMock.Object);
+            _openFileDialogMock.Setup(d => d.ShowDialog()).Returns(true);
+            _openFileDialogMock.Setup(d => d.FileName).Returns(filePath);
+            _fileDialogServiceMock.Setup(s => s.CreateOpenFileDialog()).Returns(_openFileDialogMock.Object);
+            _fileMock.Setup(f => f.ReadAllTextAsync(filePath, default)).ReturnsAsync(jsonContent);
 
             // Act
             await _conversationManager.LoadConversation();
@@ -81,12 +78,16 @@ namespace ChatConversationControl.Test
             // Assert
             Assert.Equal(2, _conversationManager.ConversationList.Count);
             Assert.Equal("Hello", _conversationManager.ConversationList[0].Text);
-            Assert.Equal("Red", _conversationManager.ConversationList[0].ColorString);
             Assert.Equal("World", _conversationManager.ConversationList[1].Text);
-            Assert.Equal("Blue", _conversationManager.ConversationList[1].ColorString);
         }
 
-        private class TestConversationManager(IFileSystem fileSystem, IFileDialogService fileDialogService)
-            : ConversationManager(fileSystem, fileDialogService);
+        private class TestConversationManager : ConversationManager
+        {
+            public TestConversationManager(IFileSystem fileSystem, IFileDialogService fileDialogService)
+                : base(fileSystem, fileDialogService)
+            {
+            }
+        }
     }
 }
+

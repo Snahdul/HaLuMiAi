@@ -17,9 +17,9 @@ public class StringToSolidColorBrushConverter : IValueConverter
     /// <param name="parameter">The converter parameter to use.</param>
     /// <param name="culture">The culture to use in the converter.</param>
     /// <returns>A SolidColorBrush if the conversion is successful; otherwise, a SolidColorBrush with Transparent color.</returns>
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is string colorName)
+        if (value is string colorName && !string.IsNullOrWhiteSpace(colorName))
         {
             try
             {
@@ -29,10 +29,9 @@ public class StringToSolidColorBrushConverter : IValueConverter
             catch (FormatException)
             {
                 // Handle the case where the color name is invalid
-                return new SolidColorBrush(Colors.Transparent);
             }
         }
-        return new SolidColorBrush(Colors.Transparent);
+        return Brushes.Transparent;
     }
 
     /// <summary>
@@ -43,12 +42,8 @@ public class StringToSolidColorBrushConverter : IValueConverter
     /// <param name="parameter">The converter parameter to use.</param>
     /// <param name="culture">The culture to use in the converter.</param>
     /// <returns>A string representing the color name if the conversion is successful; otherwise, an empty string.</returns>
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is SolidColorBrush brush)
-        {
-            return brush.Color.ToString();
-        }
-        return string.Empty;
+        return value is SolidColorBrush brush ? brush.Color.ToString() : string.Empty;
     }
 }

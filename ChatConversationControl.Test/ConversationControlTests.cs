@@ -124,5 +124,3 @@ public class ConversationControlTests
         Assert.Equal(expectedValue, actualValue);
     }
 }
-
-// Dummy RelayCommand class for testing purposes

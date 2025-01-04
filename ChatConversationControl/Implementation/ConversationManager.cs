@@ -19,6 +19,11 @@ public abstract class ConversationManager : IConversationManager
     private readonly IFileSystem _fileSystem;
     private readonly IFileDialogService _fileDialogService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ConversationManager"/> class.
+    /// </summary>
+    /// <param name="fileSystem">The file system abstraction.</param>
+    /// <param name="fileDialogService">The file dialog service.</param>
     protected ConversationManager(IFileSystem fileSystem, IFileDialogService fileDialogService)
     {
         Guard.IsNotNull(fileSystem);
@@ -28,20 +33,18 @@ public abstract class ConversationManager : IConversationManager
         _fileDialogService = fileDialogService;
     }
 
-    /// <summary>
-    /// Gets the list of conversation messages.
-    /// </summary>
-    public ObservableCollection<MessageItem> ConversationList { get; } = new();
+    /// <inheritdoc />
+    public ObservableCollection<MessageItem> ConversationList { get; } = [];
 
-    /// <summary>
-    /// Saves the conversation to a file.
-    /// </summary>
-    /// <returns>A task that represents the asynchronous save operation.</returns>
-    /// <exception cref="OperationCanceledException">The cancellation token was canceled. This exception is stored into the returned task.</exception>
+    /// <inheritdoc />
     public virtual async Task SaveConversation()
     {
-        var saveFileDialog = _fileDialogService.CreateSaveFileDialog();
-        if (saveFileDialog.ShowDialog() == true)
+        ISaveFileDialog saveFileDialog = _fileDialogService.CreateSaveFileDialog();
+        saveFileDialog.FileDialogFilter = FileDialogFilter;
+        saveFileDialog.DefaultFileExtension = DefaultFileExtension;
+        saveFileDialog.FileName = DefaultFileName;
+
+        if (saveFileDialog.ShowDialog())
         {
             var filePath = saveFileDialog.FileName;
             var options = new JsonSerializerOptions
@@ -54,31 +57,32 @@ public abstract class ConversationManager : IConversationManager
         }
     }
 
-    /// <summary>
-    /// Loads a conversation from a file.
-    /// </summary>
-    /// <returns>A task that represents the asynchronous load operation.</returns>
-    /// <exception cref="JsonException">An error occurred while deserializing the JSON content.</exception>
-    /// <exception cref="OperationCanceledException">The cancellation token was canceled. This exception is stored into the returned task.</exception>
-    /// <exception cref="NotSupportedException">There is no compatible <see cref="System.Text.Json.Serialization.JsonConverter" /> for <see cref="ObservableCollection{MessageItem}" /> or its serializable members.</exception>
+    /// <inheritdoc />
     public virtual async Task LoadConversation()
     {
         var openFileDialog = _fileDialogService.CreateOpenFileDialog();
-        if (openFileDialog.ShowDialog() == true)
+        openFileDialog.FileDialogFilter = FileDialogFilter;
+        openFileDialog.DefaultFileExtension = DefaultFileExtension;
+        openFileDialog.FileName = DefaultFileName;
+
+        if (openFileDialog.ShowDialog())
         {
             var filePath = openFileDialog.FileName;
             var jsonContent = await _fileSystem.File.ReadAllTextAsync(filePath);
 
             var options = new JsonSerializerOptions
             {
-                ReferenceHandler = ReferenceHandler.Preserve // Include this
+                ReferenceHandler = ReferenceHandler.Preserve
             };
             var conversationList = JsonSerializer.Deserialize<ObservableCollection<MessageItem>>(jsonContent, options);
 
-            ConversationList.Clear();
-            foreach (var message in conversationList)
+            if (conversationList != null)
             {
-                ConversationList.Add(message);
+                ConversationList.Clear();
+                foreach (var message in conversationList)
+                {
+                    ConversationList.Add(message);
+                }
             }
         }
     }
