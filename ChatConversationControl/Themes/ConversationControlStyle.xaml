@@ -8,9 +8,13 @@
     xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:messages="clr-namespace:ChatConversationControl.Messages">
 
+    <!-- Converter to convert boolean values to visibility -->
     <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+
+    <!-- Converter to convert string values to SolidColorBrush -->
     <converters:StringToSolidColorBrushConverter x:Key="StringToSolidColorBrushConverter"/>
 
+    <!-- Style for ConversationControl -->
     <Style TargetType="{x:Type controls:ConversationControl}">
         <Setter Property="Template">
             <Setter.Value>
@@ -21,6 +25,8 @@
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
+
+                        <!-- Buttons for clearing, saving, and loading conversation -->
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="0" Margin="5">
                             <Button Command="{Binding ClearConversationCommand, RelativeSource={RelativeSource TemplatedParent}}" ToolTip="Clear conversation">
                                 <StackPanel Orientation="Horizontal">
@@ -38,6 +44,8 @@
                                 </StackPanel>
                             </Button>
                         </StackPanel>
+
+                        <!-- ScrollViewer for displaying conversation messages -->
                         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Grid.Row="1">
                             <ItemsControl x:Name="ConversationItemsControl" Margin="5" ItemsSource="{Binding ConversationList, RelativeSource={RelativeSource TemplatedParent}}">
                                 <ItemsControl.ItemTemplate>
@@ -52,6 +60,8 @@
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                         </ScrollViewer>
+
+                        <!-- TextBox for entering prompt -->
                         <Grid Grid.Row="2" Margin="5">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>

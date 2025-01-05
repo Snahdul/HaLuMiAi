@@ -1,6 +1,6 @@
 # ChatConversationControl
 
-ChatConversationControl is a WPF application designed to manage and interact with chat conversations. It leverages the CommunityToolkit.Mvvm for MVVM architecture and Microsoft.Extensions.AI for AI-based chat functionalities.
+ChatConversationControl is a WPF class library designed to manage and interact with chat conversations. It leverages the CommunityToolkit.Mvvm for MVVM architecture and Microsoft.Extensions.AI for AI-based chat functionalities.
 
 ## Features
 
@@ -33,8 +33,6 @@ Ensure you have the following installed:
 
 4. Install the WPF UI library: `dotnet add package Wpf-Ui`
         
-    
-
 ### Building the Project
 
 To build the project, open the solution in Visual Studio and build the solution using `Ctrl+Shift+B` or by selecting `Build > Build Solution` from the menu.
@@ -87,5 +85,3 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 - [CommunityToolkit](https://github.com/CommunityToolkit/dotnet)
 - [Microsoft.Extensions.AI](https://github.com/dotnet/ai-samples/blob/main/src/microsoft-extensions-ai/README.md)
 - [WPF UI](https://github.com/lepoco/wpfui)
-
-

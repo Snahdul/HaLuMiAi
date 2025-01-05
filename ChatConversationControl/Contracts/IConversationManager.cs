@@ -19,7 +19,7 @@ public interface IConversationManager
     /// <returns>
     /// A task that represents the asynchronous operation.
     /// </returns>
-    Task LoadConversation();
+    Task LoadConversationAsync();
 
     /// <summary>
     /// Saves the conversation.
@@ -27,5 +27,5 @@ public interface IConversationManager
     /// <returns>
     /// A task that represents the asynchronous operation.
     /// </returns>
-    Task SaveConversation();
+    Task SaveConversationAsync();
 }

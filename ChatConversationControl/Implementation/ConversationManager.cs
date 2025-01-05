@@ -34,7 +34,7 @@ public abstract class ConversationManager : IConversationManager
     public ObservableCollection<MessageItem> ConversationList { get; } = [];
 
     /// <inheritdoc />
-    public virtual async Task SaveConversation()
+    public virtual async Task SaveConversationAsync()
     {
         var saveFileDialog = _fileDialogService.CreateSaveFileDialog();
 
@@ -52,7 +52,7 @@ public abstract class ConversationManager : IConversationManager
     }
 
     /// <inheritdoc />
-    public virtual async Task LoadConversation()
+    public virtual async Task LoadConversationAsync()
     {
         var openFileDialog = _fileDialogService.CreateOpenFileDialog();
 
