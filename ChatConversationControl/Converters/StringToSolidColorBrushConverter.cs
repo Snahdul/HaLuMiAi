@@ -19,17 +19,19 @@ public class StringToSolidColorBrushConverter : IValueConverter
     /// <returns>A SolidColorBrush if the conversion is successful; otherwise, a SolidColorBrush with Transparent color.</returns>
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is string colorName && !string.IsNullOrWhiteSpace(colorName))
+        if (value is not string colorName || string.IsNullOrWhiteSpace(colorName))
         {
-            try
-            {
-                var color = (Color)ColorConverter.ConvertFromString(colorName);
-                return new SolidColorBrush(color);
-            }
-            catch (FormatException)
-            {
-                // Handle the case where the color name is invalid
-            }
+            return Brushes.Transparent;
+        }
+
+        try
+        {
+            Color color = (Color)ColorConverter.ConvertFromString(colorName);
+            return new SolidColorBrush(color);
+        }
+        catch (FormatException)
+        {
+            // Handle the case where the color name is invalid
         }
         return Brushes.Transparent;
     }

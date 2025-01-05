@@ -37,9 +37,9 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
         ChatClient = chatClient;
 
         // Initialize commands
-        SaveConversationAsyncCommand = new AsyncRelayCommand(ConversationManager.SaveConversation);
-        ClearConversationAsyncCommand = new AsyncRelayCommand(ClearConversation);
-        LoadConversationAsyncCommand = new AsyncRelayCommand(ConversationManager.LoadConversation);
+        SaveConversationAsyncCommand = new AsyncRelayCommand(ConversationManager.SaveConversationAsync);
+        ClearConversationAsyncCommand = new AsyncRelayCommand(ClearConversationAsync);
+        LoadConversationAsyncCommand = new AsyncRelayCommand(ConversationManager.LoadConversationAsync);
         SendPromptAsyncCommand = new AsyncRelayCommand<object>(DoChatAsync);
         SendPromptStreamAsyncCommand = new AsyncRelayCommand<object>(DoChatStreamAsync);
     }
@@ -77,7 +77,7 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
     /// <summary>
     /// Clears the conversation.
     /// </summary>
-    private async Task ClearConversation()
+    private async Task ClearConversationAsync()
     {
         // Clear the conversation list
         ConversationList.Clear();

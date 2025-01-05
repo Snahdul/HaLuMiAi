@@ -49,7 +49,7 @@ namespace ChatConversationControl.Test
             _fileDialogServiceMock.Setup(s => s.CreateSaveFileDialog()).Returns(_saveFileDialogMock.Object);
 
             // Act
-            await _conversationManager.SaveConversation();
+            await _conversationManager.SaveConversationAsync();
 
             // Assert
             _fileMock.Verify(f => f.WriteAllTextAsync(filePath, It.IsAny<string>(), default), Times.Once);
@@ -73,7 +73,7 @@ namespace ChatConversationControl.Test
             _fileMock.Setup(f => f.ReadAllTextAsync(filePath, default)).ReturnsAsync(jsonContent);
 
             // Act
-            await _conversationManager.LoadConversation();
+            await _conversationManager.LoadConversationAsync();
 
             // Assert
             Assert.Equal(2, _conversationManager.ConversationList.Count);

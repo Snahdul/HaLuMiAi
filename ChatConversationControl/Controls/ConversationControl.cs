@@ -9,6 +9,9 @@ namespace ChatConversationControl.Controls;
 /// </summary>
 public class ConversationControl : Control
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ConversationControl"/> class.
+    /// </summary>
     static ConversationControl()
     {
         DefaultStyleKeyProperty.OverrideMetadata(typeof(ConversationControl), new FrameworkPropertyMetadata(typeof(ConversationControl)));
