@@ -2,15 +2,16 @@
 using Autofac.Extensions.DependencyInjection;
 using ChatConversationControl.Contracts;
 using ChatConversationControl.Implementation;
+using HaMiAI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
+using System.IO.Abstractions;
 using Wpf.Ui;
 using WPFUiDesktopApp.Services;
-using WPFUiDesktopApp.ViewModels.Pages;
+using WPFUiDesktopApp.Settings;
 using WPFUiDesktopApp.ViewModels.Windows;
-using WPFUiDesktopApp.Views.Pages;
 using WPFUiDesktopApp.Views.Windows;
 
 namespace WPFUiDesktopApp;
@@ -25,25 +26,39 @@ internal class Hosting
     internal static IHostBuilder CreateHostBuilder() =>
         Host.CreateDefaultBuilder()
             .UseServiceProviderFactory(new AutofacServiceProviderFactory())
-            .ConfigureContainer<ContainerBuilder>(builder =>
+            .ConfigureContainer<ContainerBuilder>((context, builder) =>
             {
-                //builder.RegisterModule<HaMiAIModule>();
+                var configuration = context.Configuration;
+                var appSettings = configuration.GetSection("AppSettings").Get<AppSettings>();
+                if (appSettings is null)
+                {
+                    throw new InvalidOperationException("AppSettings must not be null.");
+                }
+
+                var endpointUri = new Uri(appSettings.OllamaSettings.Endpoint);
+                var modelId = appSettings.OllamaSettings.TextModelId;
+
+                builder.RegisterModule(new HaMiAIModule(endpointUri, modelId));
+
+                // Register IFileSystem with its implementation
+                builder.RegisterType<FileSystem>().As<IFileSystem>().SingleInstance();
             })
             .ConfigureAppConfiguration((context, config) =>
             {
                 var env = context.HostingEnvironment;
-                config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true)
-                    .AddEnvironmentVariables();
+                App.AppSettingsFileName = $"appsettings.{env.EnvironmentName}.json";
+
+                config.AddJsonFile(App.AppSettingsFileName, optional: false, reloadOnChange: true)
+                      .AddEnvironmentVariables();
             })
             .ConfigureServices((hostContext, services) =>
             {
                 var configuration = hostContext.Configuration;
 
                 // Add options services and configure AppSettings with validation
-                //services.AddOptions<AppSettings>()
-                //    .Bind(configuration.GetSection("AppSettings"))
-                //    .Validate(appSettings => !string.IsNullOrEmpty(appSettings?.OllamaSettings?.Endpoint), "OllamaSettings.Endpoint must not be null or empty.");
+                services.AddOptions<AppSettings>()
+                    .Bind(configuration.GetSection("AppSettings"))
+                    .Validate(appSettings => !string.IsNullOrEmpty(appSettings?.OllamaSettings?.Endpoint), "OllamaSettings.Endpoint must not be null or empty.");
 
                 services.AddHostedService<ApplicationHostService>();
 
@@ -65,30 +80,7 @@ internal class Hosting
                 services.AddSingleton<INavigationWindow, MainWindow>();
                 services.AddSingleton<MainWindowViewModel>();
 
-                services.AddSingleton<DashboardPage>();
-                services.AddSingleton<DashboardViewModel>();
-                services.AddSingleton<SettingsPage>();
-                services.AddSingleton<SettingsViewModel>();
-
-                //services.AddSingleton<OllamaChatViewModel>();
-                //services.AddSingleton<OllamaPage>();
-
-                //services.AddSingleton<OllamaMemoryViewModel>();
-
-                //services.AddSingleton<WebpageImportDialogViewModel>();
-
-                //services.AddTransient<ConversationControlViewModel>();
-
-                //services.AddTransient<OllamaViewModel>();
-                //services.AddTransient<OllamaMemoryModel>();
-
-                //services.AddSingleton<ViewModels.UserControls.MemoryConversationControlViewModel>();
-
-                //services.AddSingleton<AddFileToMemoryViewModel>();
-                //services.AddSingleton<AddWebpageToMemoryViewModel>();
-
-                //services.AddTransient<TagManagerViewModel>();
-                //services.AddTransient<StorageManagementViewModel>();
+                services.AddSingleton<IFileDialogService, FileDialogService>();
             }).UseSerilog((context, services, configuration) => configuration
                 .ReadFrom.Configuration(context.Configuration)
                 .ReadFrom.Services(services)

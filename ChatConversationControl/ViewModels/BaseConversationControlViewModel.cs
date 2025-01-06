@@ -1,5 +1,4 @@
 ﻿using ChatConversationControl.Contracts;
-using ChatConversationControl.Messages;
 using CommunityToolkit.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -72,7 +71,7 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
     /// <summary>
     /// Gets the list of conversation messages.
     /// </summary>
-    public ObservableCollection<MessageItem> ConversationList => ConversationManager.ConversationList;
+    public ObservableCollection<Messages.MessageItem> ConversationList => ConversationManager.ConversationList;
 
     /// <summary>
     /// Clears the conversation.
@@ -92,7 +91,7 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
     {
         if (prompt is not string promptString || string.IsNullOrWhiteSpace(promptString)) return;
 
-        var responseMessageItem = new MessageItem
+        var responseMessageItem = new Messages.MessageItem
         {
             ColorString = "LightBlue"
         };
@@ -125,7 +124,7 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
     {
         if (prompt is not string promptString || string.IsNullOrWhiteSpace(promptString)) return;
 
-        var responseMessageItem = new MessageItem
+        var responseMessageItem = new Messages.MessageItem
         {
             ColorString = "LightBlue"
         };

@@ -1,5 +1,4 @@
 ﻿using ChatConversationControl.Contracts;
-using ChatConversationControl.Messages;
 using CommunityToolkit.Diagnostics;
 using System.Collections.ObjectModel;
 using System.IO.Abstractions;
@@ -31,7 +30,7 @@ public abstract class ConversationManager : IConversationManager
     }
 
     /// <inheritdoc />
-    public ObservableCollection<MessageItem> ConversationList { get; } = [];
+    public ObservableCollection<Messages.MessageItem> ConversationList { get; } = [];
 
     /// <inheritdoc />
     public virtual async Task SaveConversationAsync()
@@ -65,7 +64,7 @@ public abstract class ConversationManager : IConversationManager
             {
                 ReferenceHandler = ReferenceHandler.Preserve
             };
-            var conversationList = JsonSerializer.Deserialize<ObservableCollection<MessageItem>>(jsonContent, options);
+            var conversationList = JsonSerializer.Deserialize<ObservableCollection<Messages.MessageItem>>(jsonContent, options);
 
             if (conversationList != null)
             {

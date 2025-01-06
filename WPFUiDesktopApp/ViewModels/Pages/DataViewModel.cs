@@ -9,7 +9,7 @@ namespace WPFUiDesktopApp.ViewModels.Pages
         private bool _isInitialized = false;
 
         [ObservableProperty]
-        private IEnumerable<DataColor> _colors;
+        private IEnumerable<DataColor> _colors = [];
 
         public void OnNavigatedTo()
         {

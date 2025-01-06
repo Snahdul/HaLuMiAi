@@ -39,7 +39,12 @@
             CommandParameter="theme_dark"
             Content="Dark"
             GroupName="themeSelect"
-            IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dark, Mode=OneWay}" />
+            IsChecked="{Binding ViewModel.AppSettings.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dark, Mode=OneWay}" />
+
+        <ui:TextBox Text="{Binding ViewModel.AppSettings.OllamaSettings.Model, Mode=TwoWay}" PlaceholderText="Model" />
+        <ui:TextBox Text="{Binding ViewModel.AppSettings.OllamaSettings.Endpoint, Mode=TwoWay}" PlaceholderText="Endpoint" />
+
+        <ui:Button Content="Save Model" Command="{Binding Path=ViewModel.SaveSettingsCommand}"></ui:Button>
 
         <TextBlock
             Margin="0,24,0,0"

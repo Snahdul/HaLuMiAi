@@ -3,10 +3,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Security;
 using System.Windows.Threading;
 using Wpf.Ui;
+using WPFUiDesktopApp.Services;
 using WPFUiDesktopApp.Views.Windows;
 
 namespace WPFUiDesktopApp
@@ -17,6 +17,8 @@ namespace WPFUiDesktopApp
     public partial class App
     {
         private static readonly IHost AppHost = CreateHostBuilder().Build();
+
+        public static string AppSettingsFileName { get; set; } = string.Empty;
 
         /// <summary>
         /// Retrieves a service of type <typeparamref name="T"/> from the application's service provider.
@@ -58,7 +60,6 @@ namespace WPFUiDesktopApp
             AppHost.Start();
 
             DisplayMainWindow();
-            return;
         }
 
         internal static void CurrentDomainUnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -80,20 +81,24 @@ namespace WPFUiDesktopApp
         /// Occurs when the application is closing.
         /// </summary>
         /// <inheritdoc />
-        /// <exception cref="NullReferenceException">The <see cref="TaskAwaiter" /> object was not properly initialized.</exception>
-        /// <exception cref="TaskCanceledException">The task was canceled.</exception>
-        /// <exception cref="Exception">The task completed in a <see cref="System.Threading.Tasks.TaskStatus.Faulted" /> state.</exception>
         protected override void OnExit(ExitEventArgs e)
         {
             // Call base method
             base.OnExit(e);
 
-            // Run the asynchronous operation synchronously
-            // ReSharper disable once ExceptionNotDocumented
-            // ReSharper disable once ExceptionNotDocumentedOptional
-            AppHost.StopAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
-
-            AppHost.Dispose();
+            // Run the asynchronous operation asynchronously
+            try
+            {
+                AppHost.StopAsync(TimeSpan.FromSeconds(5)).GetAwaiter();
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, "An error occurred while stopping the application host");
+            }
+            finally
+            {
+                AppHost.Dispose();
+            }
         }
 
         #endregion
@@ -109,8 +114,6 @@ namespace WPFUiDesktopApp
         // https://docs.microsoft.com/dotnet/core/extensions/logging
         private static IHostBuilder CreateHostBuilder()
         {
-
-
             var hostConfiguration = Hosting.CreateHostBuilder();
 
             hostConfiguration.ConfigureContainer<ContainerBuilder>((context, containerBuilder) =>
@@ -122,6 +125,7 @@ namespace WPFUiDesktopApp
             hostConfiguration.ConfigureServices((context, services) =>
             {
                 services.AddSingleton<IContentDialogService, ContentDialogService>();
+                services.AddSingleton<SettingsService>();
             });
 
             return hostConfiguration;
@@ -132,7 +136,7 @@ namespace WPFUiDesktopApp
             var assembly = Assembly.GetExecutingAssembly();
 
             var viewModelTypes = assembly.GetTypes()
-                .Where(type => type.Namespace == "UiDesktopApp.ViewModels" &&
+                .Where(type => type.Namespace != null && type.Namespace.StartsWith("WPFUiDesktopApp.ViewModels") &&
                                type.IsAssignableTo(typeof(ObservableObject)))
                 .ToArray();
 
@@ -140,7 +144,7 @@ namespace WPFUiDesktopApp
             {
                 var registration = containerBuilder.RegisterType(type)
                     .AsSelf()
-                    .InstancePerLifetimeScope().AsImplementedInterfaces();
+                    .SingleInstance().AsImplementedInterfaces();
 
                 if (typeof(IStartable).IsAssignableFrom(type))
                 {
@@ -154,7 +158,7 @@ namespace WPFUiDesktopApp
             var assembly = Assembly.GetExecutingAssembly();
 
             var viewTypes = assembly.GetTypes()
-                .Where(type => type is { Namespace: "UiDesktopApp.Views", IsClass: true, IsAbstract: false })
+                .Where(type => type.Namespace != null && type.Namespace.StartsWith("WPFUiDesktopApp.Views"))
                 .ToArray();
 
             foreach (var type in viewTypes)
