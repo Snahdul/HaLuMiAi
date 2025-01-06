@@ -4,7 +4,7 @@
     <!-- Merged dictionaries to include other resource dictionaries -->
     <ResourceDictionary.MergedDictionaries>
         <!-- Include the ConversationControlStyle resource dictionary -->
-        <ResourceDictionary Source="/HaMiConversationControl;component/Themes/ConversationControlStyle.xaml" />
+        <ResourceDictionary Source="/ChatConversationControl;component/Themes/ConversationControlStyle.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
 </ResourceDictionary>

@@ -1,5 +1,4 @@
-﻿using ChatConversationControl.Messages;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 
 namespace ChatConversationControl.Contracts;
 
@@ -11,7 +10,7 @@ public interface IConversationManager
     /// <summary>
     /// Gets the list of conversation messages.
     /// </summary>
-    ObservableCollection<MessageItem> ConversationList { get; }
+    ObservableCollection<Messages.MessageItem> ConversationList { get; }
 
     /// <summary>
     /// Loads a conversation.
