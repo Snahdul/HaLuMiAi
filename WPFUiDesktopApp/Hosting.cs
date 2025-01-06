@@ -8,14 +8,17 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using System.IO.Abstractions;
+using System.Reflection;
 using Wpf.Ui;
 using WPFUiDesktopApp.Services;
 using WPFUiDesktopApp.Settings;
-using WPFUiDesktopApp.ViewModels.Windows;
 using WPFUiDesktopApp.Views.Windows;
 
 namespace WPFUiDesktopApp;
 
+/// <summary>
+/// Provides methods to create and configure the host for the application.
+/// </summary>
 internal class Hosting
 {
     /// <summary>
@@ -23,8 +26,8 @@ internal class Hosting
     /// </summary>
     /// <param name="args">The command-line arguments.</param>
     /// <returns>An <see cref="IHostBuilder"/> instance.</returns>
-    internal static IHostBuilder CreateHostBuilder() =>
-        Host.CreateDefaultBuilder()
+    internal static IHostBuilder CreateHostBuilder(string[] args) =>
+        Host.CreateDefaultBuilder(args)
             .UseServiceProviderFactory(new AutofacServiceProviderFactory())
             .ConfigureContainer<ContainerBuilder>((context, builder) =>
             {
@@ -42,14 +45,20 @@ internal class Hosting
 
                 // Register IFileSystem with its implementation
                 builder.RegisterType<FileSystem>().As<IFileSystem>().SingleInstance();
+
+                // Register view models and views
+                RegisterViewModels(builder);
+                RegisterViews(builder);
             })
             .ConfigureAppConfiguration((context, config) =>
             {
                 var env = context.HostingEnvironment;
-                App.AppSettingsFileName = $"appsettings.{env.EnvironmentName}.json";
+                var configFileName = $"appsettings.{env.EnvironmentName}.json";
 
-                config.AddJsonFile(App.AppSettingsFileName, optional: false, reloadOnChange: true)
+                config.AddJsonFile(configFileName, optional: false, reloadOnChange: false)
                       .AddEnvironmentVariables();
+
+                App.AppSettingsFileName = configFileName;
             })
             .ConfigureServices((hostContext, services) =>
             {
@@ -71,6 +80,10 @@ internal class Hosting
                 // TaskBar manipulation
                 services.AddSingleton<ITaskBarService, TaskBarService>();
 
+                services.AddSingleton<SettingsService>();
+
+                services.AddSingleton<IContentDialogService, ContentDialogService>();
+
                 // Service containing navigation, same as INavigationWindow... but without window
                 services.AddSingleton<INavigationService, NavigationService>();
 
@@ -78,7 +91,6 @@ internal class Hosting
 
                 // Main window with navigation
                 services.AddSingleton<INavigationWindow, MainWindow>();
-                services.AddSingleton<MainWindowViewModel>();
 
                 services.AddSingleton<IFileDialogService, FileDialogService>();
             }).UseSerilog((context, services, configuration) => configuration
@@ -86,4 +98,49 @@ internal class Hosting
                 .ReadFrom.Services(services)
                 .WriteTo.Console()
                 .WriteTo.File("hami/log/log.txt", rollingInterval: RollingInterval.Day));
+
+    /// <summary>
+    /// Registers the view models in the Autofac container.
+    /// </summary>
+    /// <param name="containerBuilder">The Autofac container builder.</param>
+    private static void RegisterViewModels(ContainerBuilder containerBuilder)
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+
+        var viewModelTypes = assembly.GetTypes()
+            .Where(type => type.Namespace != null && type.Namespace.StartsWith("WPFUiDesktopApp.ViewModels") &&
+                           type.IsAssignableTo(typeof(ObservableObject)))
+            .ToArray();
+
+        foreach (var type in viewModelTypes)
+        {
+            var registration = containerBuilder.RegisterType(type)
+                .AsSelf()
+                .SingleInstance();
+
+            if (typeof(IStartable).IsAssignableFrom(type))
+            {
+                registration.As<IStartable>();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Registers the views in the Autofac container.
+    /// </summary>
+    /// <param name="containerBuilder">The Autofac container builder.</param>
+    private static void RegisterViews(ContainerBuilder containerBuilder)
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+
+        var viewTypes = assembly.GetTypes()
+            .Where(type => type.Namespace != null && type.Namespace.StartsWith("WPFUiDesktopApp.Views"))
+            .ToArray();
+
+        foreach (var type in viewTypes)
+        {
+            containerBuilder.RegisterType(type).AsSelf().SingleInstance();
+        }
+    }
 }
+

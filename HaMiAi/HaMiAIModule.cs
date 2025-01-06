@@ -45,7 +45,7 @@ public class HaMiAIModule : Module
     private void RegisterOllamaChatClient(ContainerBuilder builder)
     {
         // Register OllamaChatClient using the provided settings
-        builder.RegisterInstance(new OllamaChatClient(_endpointUri, _modelId))
+        builder.RegisterInstance(new OllamaChatClient(endpoint: _endpointUri, modelId: _modelId))
             .As<IChatClient>()
             .SingleInstance();
     }
