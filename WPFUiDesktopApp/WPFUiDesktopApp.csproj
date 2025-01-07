@@ -46,6 +46,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ChatConversationControl\ChatConversationControl.csproj" />
+    <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\HaMiAi\HaMiAi.csproj" />
   </ItemGroup>
 

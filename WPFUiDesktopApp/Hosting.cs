@@ -38,10 +38,7 @@ internal class Hosting
                     throw new InvalidOperationException("AppSettings must not be null.");
                 }
 
-                var endpointUri = new Uri(appSettings.OllamaSettings.Endpoint);
-                var modelId = appSettings.OllamaSettings.TextModelId;
-
-                builder.RegisterModule(new HaMiAIModule(endpointUri, modelId));
+                builder.RegisterModule(new HaMiAIModule(appSettings.OllamaSettings));
 
                 // Register IFileSystem with its implementation
                 builder.RegisterType<FileSystem>().As<IFileSystem>().SingleInstance();

@@ -1,4 +1,5 @@
-﻿using Wpf.Ui.Appearance;
+﻿using Common.Settings;
+using Wpf.Ui.Appearance;
 
 namespace WPFUiDesktopApp.Settings
 {
