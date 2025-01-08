@@ -2,6 +2,7 @@
 using Common.Settings;
 using CommunityToolkit.Diagnostics;
 using Microsoft.Extensions.AI;
+using OllamaSharp;
 using System.Diagnostics.CodeAnalysis;
 
 namespace HaMiAI;
@@ -42,9 +43,9 @@ public class HaMiAIModule : Module
     {
         // Register OllamaChatClient using the provided settings
         builder.RegisterInstance(
-                new OllamaChatClient(
-                    endpoint: _ollamaSettings.Endpoint,
-                    modelId: _ollamaSettings.TextModelId))
+                new OllamaApiClient(
+                    _ollamaSettings.Endpoint,
+                    _ollamaSettings.TextModelId))
             .As<IChatClient>()
             .SingleInstance();
     }

@@ -15,8 +15,7 @@ public class OllamaViewModel : ObservableObject, INavigationAware
     /// <exception cref="ArgumentNullException">
     /// Thrown if <paramref name="ollamaChatViewModel" /> is <see langword="null" />.
     /// </exception>
-    public OllamaViewModel(
-        OllamaChatViewModel ollamaChatViewModel)
+    public OllamaViewModel(OllamaChatViewModel ollamaChatViewModel)
     {
 
         Guard.IsNotNull(ollamaChatViewModel);

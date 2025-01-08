@@ -4,6 +4,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.AI;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Windows;
 
 namespace ChatConversationControl.ViewModels;
 
@@ -122,7 +124,8 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
     /// <param name="prompt">The chat prompt.</param>
     protected virtual async Task DoChatStreamAsync(object? prompt)
     {
-        if (prompt is not string promptString || string.IsNullOrWhiteSpace(promptString)) return;
+        if (prompt is not string promptString || string.IsNullOrWhiteSpace(promptString))
+            return;
 
         var responseMessageItem = new Messages.MessageItem
         {
@@ -133,13 +136,25 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
         {
             IsLoading = true;
 
-            // Add the response message item to the conversation list
-            ConversationList.Add(responseMessageItem);
-
-            // Stream the response from the chat client and append each part to the message item
-            await foreach (var part in ChatClient.CompleteStreamingAsync(promptString))
+            // Add the response message item to the conversation list on the UI thread
+            Application.Current.Dispatcher.Invoke(() =>
             {
-                if (part.Text != null) responseMessageItem.AppendText(part.Text);
+                ConversationList.Add(responseMessageItem);
+            });
+
+            // Stream the response from the chat client
+            await foreach (var part in ChatClient.CompleteStreamingAsync(promptString).ConfigureAwait(false))
+            {
+                if (part.Text != null)
+                {
+                    Debug.WriteLine(part.Text);
+
+                    // Update the UI-bound property on the UI thread
+                    Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        responseMessageItem.AppendText(part.Text);
+                    }));
+                }
             }
         }
         finally
