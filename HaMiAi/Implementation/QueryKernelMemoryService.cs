@@ -52,7 +52,7 @@ public class QueryKernelMemoryService : IQueryKernelMemoryService
     /// <param name="query">The search query.</param>
     /// <param name="storageIndex">The index of the memory to search.</param>
     /// <returns>A task representing the asynchronous operation, with a result containing the search result.</returns>
-    public async Task<SearchResult?> Search(string query, string storageIndex)
+    public async Task<SearchResult?> SearchAsync(string query, string storageIndex)
     {
         var memory = InitializeKernelMemory();
         return await memory.SearchAsync(query, storageIndex);

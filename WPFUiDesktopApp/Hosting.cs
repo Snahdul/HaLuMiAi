@@ -2,6 +2,7 @@
 using Autofac.Extensions.DependencyInjection;
 using ChatConversationControl.Contracts;
 using ChatConversationControl.Implementation;
+using Common.Settings;
 using HaMiAi;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -69,6 +70,9 @@ internal class Hosting
                 services.AddOptions<AppSettings>()
                     .Bind(configuration.GetSection("AppSettings"))
                     .Validate(appSettings => !string.IsNullOrEmpty(appSettings?.OllamaSettings?.Endpoint), "OllamaSettings.Endpoint must not be null or empty.");
+
+                // Register IOptions<OllamaSettings>
+                services.Configure<OllamaSettings>(configuration.GetSection("AppSettings:OllamaSettings"));
 
                 services.AddHostedService<ApplicationHostService>();
 

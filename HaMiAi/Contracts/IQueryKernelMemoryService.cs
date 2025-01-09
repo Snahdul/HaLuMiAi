@@ -29,5 +29,5 @@ public interface IQueryKernelMemoryService
     /// <param name="query">The search query.</param>
     /// <param name="storageIndex">The index of the memory to search.</param>
     /// <returns>A task representing the asynchronous operation, with a result containing the search result.</returns>
-    Task<SearchResult?> Search(string query, string storageIndex);
+    Task<SearchResult?> SearchAsync(string query, string storageIndex);
 }
