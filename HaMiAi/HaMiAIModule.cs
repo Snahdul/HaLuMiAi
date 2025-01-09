@@ -1,11 +1,12 @@
 ﻿using Autofac;
 using Common.Settings;
 using CommunityToolkit.Diagnostics;
+using HaMiAi.Implementation;
 using Microsoft.Extensions.AI;
 using OllamaSharp;
 using System.Diagnostics.CodeAnalysis;
 
-namespace HaMiAI;
+namespace HaMiAi;
 
 /// <summary>
 /// Autofac module for registering services related to Semantic Kernel.
@@ -33,6 +34,8 @@ public class HaMiAIModule : Module
     protected override void Load(ContainerBuilder builder)
     {
         RegisterOllamaChatClient(builder);
+
+        builder.RegisterType<KernelMemoryServiceFactory>().AsImplementedInterfaces();
     }
 
     /// <summary>

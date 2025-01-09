@@ -1,4 +1,5 @@
 ﻿using Common.Settings;
+using HaMiAi.Contracts;
 using HaMiAi.Implementation.Handler;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -18,7 +19,7 @@ namespace HaMiAi.Implementation;
 /// <summary>
 /// Factory for creating the kernel memory service.
 /// </summary>
-public class KernelMemoryServiceFactory(ILoggerFactory? loggerFactory)
+public class KernelMemoryServiceFactory(ILoggerFactory? loggerFactory) : IKernelMemoryServiceFactory
 {
     private readonly ILogger<KernelMemoryServiceFactory> _logger =
         (loggerFactory ?? DefaultLogger.Factory).CreateLogger<KernelMemoryServiceFactory>();
@@ -130,7 +131,6 @@ public class KernelMemoryServiceFactory(ILoggerFactory? loggerFactory)
         MemoryService memoryService = memoryBuilder.Build<MemoryService>();
         MemoryServiceDecorator memoryServiceDecorator = new(new NullLoggerFactory(), memoryService);
 
-        host.Services.AddSingleton<MemoryService>(memoryService);
         host.Services.AddSingleton<MemoryServiceDecorator>(memoryServiceDecorator);
 
         var hostingApp = host.Build();

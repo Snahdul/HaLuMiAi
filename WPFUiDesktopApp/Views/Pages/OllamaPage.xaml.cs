@@ -24,13 +24,13 @@ namespace WPFUiDesktopApp.Views.Pages
         /// <inheritdoc />
         public void OnNavigatedTo()
         {
-            //ViewModel.OllamaMemoryViewModel.OnNavigatedTo();
+            ViewModel.OllamaMemoryViewModel.OnNavigatedTo();
         }
 
         /// <inheritdoc />
         public void OnNavigatedFrom()
         {
-            //ViewModel.OllamaMemoryViewModel.OnNavigatedFrom();
+            ViewModel.OllamaMemoryViewModel.OnNavigatedFrom();
         }
 
         #endregion

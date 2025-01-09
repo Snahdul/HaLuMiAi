@@ -1,0 +1,106 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:converters1="clr-namespace:ChatConversationControl.Converters"
+    xmlns:controls1="clr-namespace:ChatConversationControl.Controls"
+    xmlns:messages="clr-namespace:ChatConversationControl.Messages"
+    xmlns:behaviors="clr-namespace:ChatConversationControl.Behaviors">
+
+    <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    <converters1:StringToSolidColorBrushConverter x:Key="StringToSolidColorBrushConverter"/>
+
+    <Style TargetType="{x:Type controls1:MemoryConversationControl}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls1:MemoryConversationControl}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="0" Margin="5">
+                            <Button Command="{Binding ClearConversationCommand, RelativeSource={RelativeSource TemplatedParent}}" 
+                                    ToolTip="Clear conversation">
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon Symbol="Delete24" Margin="0,0,5,0"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Command="{Binding SaveConversationCommand, RelativeSource={RelativeSource TemplatedParent}}" 
+                                    ToolTip="Save conversation" Margin="5,0,0,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon Symbol="SaveEdit24" Margin="0,0,5,0"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Command="{Binding LoadConversationCommand, RelativeSource={RelativeSource TemplatedParent}}" 
+                                    ToolTip="Load conversation" Margin="5,0,0,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon Symbol="SelectObject24"  Margin="0,0,5,0"/>
+                                </StackPanel>
+                            </Button>
+                            <ComboBox ItemsSource="{TemplateBinding StorageIndexes}" 
+                                  SelectedItem="{Binding SelectedStorageIndex, RelativeSource={RelativeSource TemplatedParent}}" 
+                                  Margin="5,0,0,0"/>
+                        </StackPanel>
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Grid.Row="1">
+                            <ItemsControl x:Name="ConversationItemsControl" Margin="5" 
+                                          ItemsSource="{Binding ConversationList, RelativeSource={RelativeSource TemplatedParent}}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type messages:MessageItem}">
+                                        <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="500" Margin="10">
+                                            <TextBox Text="{Binding Text, Mode=TwoWay}" 
+                                                     TextWrapping="Wrap" 
+                                                     Foreground="{Binding ColorString, Mode=TwoWay, Converter={StaticResource StringToSolidColorBrushConverter}}" 
+                                                     Margin="5"/>
+                                        </ScrollViewer>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                        <Grid Grid.Row="2" Margin="5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <ui:TextBox
+                            x:Name="PromptTextBox"
+                            Text="{Binding Prompt, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                            AcceptsReturn="True"
+                            PlaceholderText="Enter your prompt"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            TextWrapping="Wrap"
+                            MaxLines="20"
+                            MinWidth="200"
+                            MinHeight="100"
+                            MaxHeight="100"
+                            Margin="0,5,0,0">
+                                <b:Interaction.Behaviors>
+                                    <behaviors:FocusOnLoadBehavior />
+                                    <behaviors:EnterKeyToCommandBehavior 
+                                        Command="{Binding SendPromptCommand, RelativeSource={RelativeSource TemplatedParent}}"/>
+                                </b:Interaction.Behaviors>
+                            </ui:TextBox>
+                            <Button Command="{Binding SendPromptCommand, RelativeSource={RelativeSource TemplatedParent}}"
+                                CommandParameter="{Binding Prompt, RelativeSource={RelativeSource TemplatedParent}}"
+                                Grid.Column="1" Margin="5,0,0,0" ToolTipService.ToolTip="Send">
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon Symbol="Send24" Margin="0,0,5,0"/>
+                                    <TextBlock Text="Send" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+
+                        <!-- Loading Spinner -->
+                        <ui:ProgressRing Grid.Row="1" IsIndeterminate="True" 
+                                         Visibility="{TemplateBinding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

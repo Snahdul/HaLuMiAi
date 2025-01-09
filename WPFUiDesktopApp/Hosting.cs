@@ -2,7 +2,7 @@
 using Autofac.Extensions.DependencyInjection;
 using ChatConversationControl.Contracts;
 using ChatConversationControl.Implementation;
-using HaMiAI;
+using HaMiAi;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -10,6 +10,7 @@ using Serilog;
 using System.IO.Abstractions;
 using System.Reflection;
 using Wpf.Ui;
+using WPFUiDesktopApp.Models;
 using WPFUiDesktopApp.Services;
 using WPFUiDesktopApp.Settings;
 using WPFUiDesktopApp.Views.Windows;
@@ -46,6 +47,9 @@ internal class Hosting
                 // Register view models and views
                 RegisterViewModels(builder);
                 RegisterViews(builder);
+
+                // Register custom registration source for logging missing registrations
+                builder.RegisterSource(new MissingRegistrationLogger());
             })
             .ConfigureAppConfiguration((context, config) =>
             {
@@ -90,6 +94,8 @@ internal class Hosting
                 services.AddSingleton<INavigationWindow, MainWindow>();
 
                 services.AddSingleton<IFileDialogService, FileDialogService>();
+
+                services.AddSingleton<OllamaMemoryModel>();
             }).UseSerilog((context, services, configuration) => configuration
                 .ReadFrom.Configuration(context.Configuration)
                 .ReadFrom.Services(services)
@@ -140,4 +146,3 @@ internal class Hosting
         }
     }
 }
-

@@ -137,7 +137,7 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
             IsLoading = true;
 
             // Add the response message item to the conversation list on the UI thread
-            Application.Current.Dispatcher.BeginInvoke(() =>
+            await Application.Current.Dispatcher.BeginInvoke(() =>
             {
                 ConversationList.Add(responseMessageItem);
             });
@@ -150,7 +150,7 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
                     Debug.WriteLine(part.Text);
 
                     // Update the UI-bound property on the UI thread
-                    Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                    await Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                     {
                         responseMessageItem.AppendText(part.Text);
                     }));

@@ -5,6 +5,7 @@
     <ResourceDictionary.MergedDictionaries>
         <!-- Include the ConversationControlStyle resource dictionary -->
         <ResourceDictionary Source="/ChatConversationControl;component/Themes/ConversationControlStyle.xaml" />
+        <ResourceDictionary Source="/ChatConversationControl;component/Themes/MemoryConversationControlStyle.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
 </ResourceDictionary>

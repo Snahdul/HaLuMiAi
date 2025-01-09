@@ -26,7 +26,7 @@ public sealed class ImportDocumentKernelMemory : IImportDocumentKernelMemory, ID
     /// <param name="kernelMemoryServiceFactory">The kernel memory service factory.</param>
     /// <param name="options">The application settings for Ollama options.</param>
     public ImportDocumentKernelMemory(ILoggerFactory? loggerFactory,
-        KernelMemoryServiceFactory kernelMemoryServiceFactory,
+        IKernelMemoryServiceFactory kernelMemoryServiceFactory,
         IOptions<OllamaSettings> options)
     {
         _logger = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<ImportDocumentKernelMemory>();

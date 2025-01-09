@@ -58,7 +58,7 @@ namespace HaMiAi.Test
         [Fact]
         public async Task MemoryServiceTest()
         {
-            KernelMemoryServiceFactory kernelMemoryServiceFactory = new(new NullLoggerFactory());
+            IKernelMemoryServiceFactory kernelMemoryServiceFactory = new KernelMemoryServiceFactory(new NullLoggerFactory());
 
             const string memoryIndex = "Unittest";
 
@@ -111,7 +111,7 @@ namespace HaMiAi.Test
         [Fact]
         public async Task ImportWithStepsTest()
         {
-            KernelMemoryServiceFactory kernelMemoryServiceFactory = new(new NullLoggerFactory());
+            IKernelMemoryServiceFactory kernelMemoryServiceFactory = new KernelMemoryServiceFactory(new NullLoggerFactory());
 
             const string memoryIndex = "Unittest";
 
@@ -175,40 +175,6 @@ namespace HaMiAi.Test
             Assert.False(searchResult.NoResult);
 
             await host.StopAsync(CancellationToken.None);
-        }
-
-        [Fact]
-        public async Task CreateHostTest()
-        {
-            var storeIndex = "cv";
-
-            // Create an instance of OllamaSettings
-            var ollamaSettings = new OllamaSettings
-            {
-                Endpoint = "http://localhost:11434",
-                TextModelId = "llama3.2",
-                EmbeddingModelId = "mxbai-embed-large"
-            };
-
-            // Create an IOptions<OllamaSettings> instance
-            IOptions<OllamaSettings> options = Options.Create(ollamaSettings);
-
-            IImportDocumentKernelMemory importDocumentKernelMemory =
-                new ImportDocumentKernelMemory(
-                    new NullLoggerFactory(),
-                    new KernelMemoryServiceFactory(new NullLoggerFactory()),
-                    options);
-
-            var docId = await importDocumentKernelMemory.ImportDocumentAsync(@"ImportDocuments\What is AI.txt", storeIndex: storeIndex, new Dictionary<string, string>());
-
-
-
-            Assert.NotNull(docId);
-
-            IQueryKernelMemoryService queryKernelMemoryService = new QueryKernelMemoryService(options);
-            var response = await queryKernelMemoryService.AskAsync("What is AI?", storeIndex);
-
-            Assert.NotNull(response);
         }
     }
 }

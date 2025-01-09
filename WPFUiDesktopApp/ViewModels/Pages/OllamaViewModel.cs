@@ -12,15 +12,21 @@ public class OllamaViewModel : ObservableObject, INavigationAware
     /// Initializes a new instance of the <see cref="OllamaViewModel"/> class.
     /// </summary>
     /// <param name="ollamaChatViewModel">The view model for the Ollama chat page.</param>
+    /// <param name="ollamaMemoryViewModel">
+    /// 
+    /// </param>
     /// <exception cref="ArgumentNullException">
     /// Thrown if <paramref name="ollamaChatViewModel" /> is <see langword="null" />.
     /// </exception>
-    public OllamaViewModel(OllamaChatViewModel ollamaChatViewModel)
+    public OllamaViewModel(
+        OllamaChatViewModel ollamaChatViewModel,
+        OllamaMemoryViewModel ollamaMemoryViewModel)
     {
-
         Guard.IsNotNull(ollamaChatViewModel);
+        Guard.IsNotNull(ollamaMemoryViewModel);
 
         OllamaChatViewModel = ollamaChatViewModel;
+        OllamaMemoryViewModel = ollamaMemoryViewModel;
     }
 
     /// <summary>
@@ -28,16 +34,20 @@ public class OllamaViewModel : ObservableObject, INavigationAware
     /// </summary>
     public OllamaChatViewModel OllamaChatViewModel { get; }
 
+    public OllamaMemoryViewModel OllamaMemoryViewModel { get; }
+
     #region Implementation of INavigationAware
 
     /// <inheritdoc />
     public void OnNavigatedTo()
     {
+        OllamaMemoryViewModel.OnNavigatedTo();
     }
 
     /// <inheritdoc />
     public void OnNavigatedFrom()
     {
+        OllamaMemoryViewModel.OnNavigatedFrom();
     }
 
     #endregion
