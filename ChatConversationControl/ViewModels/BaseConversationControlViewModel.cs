@@ -137,7 +137,7 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
             IsLoading = true;
 
             // Add the response message item to the conversation list on the UI thread
-            Application.Current.Dispatcher.Invoke(() =>
+            Application.Current.Dispatcher.BeginInvoke(() =>
             {
                 ConversationList.Add(responseMessageItem);
             });

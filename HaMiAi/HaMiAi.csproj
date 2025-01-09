@@ -4,7 +4,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-	  <NoWarn>$(NoWarn)SKEXP0010</NoWarn>
+	  <NoWarn>$(NoWarn)SKEXP0010, KMEXP00</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,6 +16,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="NTextCat" Version="0.3.65" />
     <PackageReference Include="Serilog" Version="4.2.1-dev-02337" />
   </ItemGroup>
 
