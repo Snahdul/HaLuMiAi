@@ -28,7 +28,6 @@ public class KernelMemoryServiceFactory(ILoggerFactory? loggerFactory, IOptions<
     /// <summary>
     /// Creates the host with the default memory pipeline.
     /// </summary>
-    /// <param name="options">The application settings for Ollama options.</param>
     /// <returns>The created host.</returns>
     public IHost CreateHostWithDefaultMemoryPipeline()
     {

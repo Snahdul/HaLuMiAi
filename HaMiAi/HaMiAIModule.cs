@@ -36,6 +36,8 @@ public class HaMiAIModule : Module
         RegisterOllamaChatClient(builder);
 
         builder.RegisterType<KernelMemoryServiceFactory>().AsImplementedInterfaces();
+
+        builder.RegisterType<MemoryOperationExecutor>().AsImplementedInterfaces();
     }
 
     /// <summary>

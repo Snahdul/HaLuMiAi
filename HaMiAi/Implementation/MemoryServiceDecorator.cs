@@ -3,23 +3,28 @@ using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.Context;
 using Microsoft.KernelMemory.Diagnostics;
+using System.IO.Abstractions;
 using System.Runtime.CompilerServices;
 
 namespace HaMiAi.Implementation;
 
 public class MemoryServiceDecorator : IKernelMemory
 {
+    private readonly IFileSystem _fileSystem;
     private readonly IKernelMemory _kernelMemory;
     private readonly ILogger<MemoryServiceDecorator> _logger;
 
-    public MemoryServiceDecorator(ILoggerFactory? loggerFactory, IKernelMemory kernelMemory)
+
+    public MemoryServiceDecorator(ILoggerFactory? loggerFactory, IFileSystem fileSystem, IKernelMemory kernelMemory)
     {
         Guard.IsNotNull(kernelMemory);
 
+        _fileSystem = fileSystem;
         _kernelMemory = kernelMemory;
         _logger = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<MemoryServiceDecorator>();
     }
 
+    /// <inheritdoc />
     public async Task<string> ImportDocumentAsync(Document document, string? index = null, IEnumerable<string>? steps = null, IContext? context = null, CancellationToken cancellationToken = default)
     {
         try
@@ -34,12 +39,13 @@ public class MemoryServiceDecorator : IKernelMemory
         }
     }
 
+    /// <inheritdoc />
     public async Task<string> ImportDocumentAsync(string filePath, string? documentId = null, TagCollection? tags = null, string? index = null, IEnumerable<string>? steps = null, IContext? context = null, CancellationToken cancellationToken = default)
     {
         try
         {
             Guard.IsNotNull(filePath);
-            Guard.IsTrue(File.Exists(filePath));
+            Guard.IsTrue(_fileSystem.File.Exists(filePath));
 
             return await _kernelMemory.ImportDocumentAsync(filePath, documentId, tags, index, steps, context, cancellationToken);
         }
@@ -55,6 +61,7 @@ public class MemoryServiceDecorator : IKernelMemory
         }
     }
 
+    /// <inheritdoc />
     public async Task<string> ImportDocumentAsync(DocumentUploadRequest uploadRequest, IContext? context = null, CancellationToken cancellationToken = default)
     {
         try
@@ -70,6 +77,7 @@ public class MemoryServiceDecorator : IKernelMemory
         }
     }
 
+    /// <inheritdoc />
     public async Task<string> ImportDocumentAsync(Stream content, string? fileName = null, string? documentId = null, TagCollection? tags = null, string? index = null, IEnumerable<string>? steps = null, IContext? context = null, CancellationToken cancellationToken = default)
     {
         try
@@ -85,6 +93,7 @@ public class MemoryServiceDecorator : IKernelMemory
         }
     }
 
+    /// <inheritdoc />
     public async Task<string> ImportTextAsync(string text, string? documentId = null, TagCollection? tags = null, string? index = null, IEnumerable<string>? steps = null, IContext? context = null, CancellationToken cancellationToken = default)
     {
         try
@@ -100,6 +109,7 @@ public class MemoryServiceDecorator : IKernelMemory
         }
     }
 
+    /// <inheritdoc />
     public async Task<string> ImportWebPageAsync(string url, string? documentId = null, TagCollection? tags = null, string? index = null, IEnumerable<string>? steps = null, IContext? context = null, CancellationToken cancellationToken = default)
     {
         try
@@ -120,16 +130,19 @@ public class MemoryServiceDecorator : IKernelMemory
         }
     }
 
+    /// <inheritdoc />
     public async Task<IEnumerable<IndexDetails>> ListIndexesAsync(CancellationToken cancellationToken = default)
     {
         return await _kernelMemory.ListIndexesAsync(cancellationToken);
     }
 
+    /// <inheritdoc />
     public async Task DeleteIndexAsync(string? index = null, CancellationToken cancellationToken = default)
     {
         await _kernelMemory.DeleteIndexAsync(index, cancellationToken);
     }
 
+    /// <inheritdoc />
     public async Task DeleteDocumentAsync(string documentId, string? index = null, CancellationToken cancellationToken = default)
     {
         try
@@ -144,6 +157,7 @@ public class MemoryServiceDecorator : IKernelMemory
         }
     }
 
+    /// <inheritdoc />
     public async Task<bool> IsDocumentReadyAsync(string documentId, string? index = null, CancellationToken cancellationToken = default)
     {
         try
@@ -158,6 +172,7 @@ public class MemoryServiceDecorator : IKernelMemory
         }
     }
 
+    /// <inheritdoc />
     public async Task<DataPipelineStatus?> GetDocumentStatusAsync(string documentId, string? index = null, CancellationToken cancellationToken = default)
     {
         try
@@ -172,13 +187,15 @@ public class MemoryServiceDecorator : IKernelMemory
         }
     }
 
+    /// <inheritdoc />
+    /// <exception cref="ArgumentException">Thrown if <paramref name="documentId" /> is empty.</exception>
     public async Task<StreamableFileContent> ExportFileAsync(string documentId, string fileName, string? index = null, CancellationToken cancellationToken = default)
     {
         try
         {
             Guard.IsNotNullOrEmpty(documentId);
             Guard.IsNotNullOrEmpty(fileName);
-            Guard.IsTrue(File.Exists(fileName));
+            Guard.IsTrue(_fileSystem.File.Exists(fileName));
 
             return await _kernelMemory.ExportFileAsync(documentId, fileName, index, cancellationToken);
         }
@@ -194,6 +211,7 @@ public class MemoryServiceDecorator : IKernelMemory
         }
     }
 
+    /// <inheritdoc />
     public async Task<SearchResult> SearchAsync(string query, string? index = null, MemoryFilter? filter = null, ICollection<MemoryFilter>? filters = null, double minRelevance = 0, int limit = -1, IContext? context = null, CancellationToken cancellationToken = default)
     {
         try
@@ -209,6 +227,7 @@ public class MemoryServiceDecorator : IKernelMemory
         }
     }
 
+    /// <inheritdoc />
     public async IAsyncEnumerable<MemoryAnswer> AskStreamingAsync(string question, string? index = null,
         MemoryFilter? filter = null, ICollection<MemoryFilter>? filters = null, double minRelevance = 0,
         SearchOptions? options = null, IContext? context = null,
@@ -218,8 +237,9 @@ public class MemoryServiceDecorator : IKernelMemory
         {
             Guard.IsNotNullOrWhiteSpace(question);
         }
-        catch (ArgumentNullException ex)
+        catch (ArgumentNullException argumentNullException)
         {
+            _logger.LogError(argumentNullException, "Argument null error while asking streaming");
             yield break;
         }
 

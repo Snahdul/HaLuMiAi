@@ -1,9 +1,5 @@
-﻿using Common.Settings;
-using CommunityToolkit.Diagnostics;
+﻿using CommunityToolkit.Diagnostics;
 using HaMiAi.Contracts;
-using HaMiAi.Implementation;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Microsoft.KernelMemory;
 using Microsoft.Win32;
 using WPFUiDesktopApp.ViewModels.Pages;
@@ -12,8 +8,7 @@ namespace WPFUiDesktopApp.ViewModels.UserControls;
 
 public partial class AddFileToMemoryViewModel : ObservableObject
 {
-    private readonly IOptions<OllamaSettings> _options;
-    private readonly IKernelMemoryServiceFactory _kernelMemoryServiceFactory;
+    private readonly IMemoryOperationExecutor _memoryOperationExecutor;
 
     [ObservableProperty]
     private Visibility _openedFilePathVisibility = Visibility.Collapsed;
@@ -27,23 +22,19 @@ public partial class AddFileToMemoryViewModel : ObservableObject
     /// <summary>
     /// Initializes a new instance of the <see cref="AddFileToMemoryViewModel"/> class.
     /// </summary>
-    /// <param name="options">The application settings for Ollama options.</param>
-    /// <param name="kernelMemoryServiceFactory">The factory for creating kernel memory services.</param>
+    /// <param name="memoryOperationExecutor">The executor for memory operations.</param>
     /// <param name="tagManagerViewModel">The tag manager view model.</param>
     /// <param name="storageManagementViewModel">The storage management view model.</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="tagManagerViewModel" /> or <paramref name="storageManagementViewModel" /> is <see langword="null" />.</exception>
     public AddFileToMemoryViewModel(
-        IOptions<OllamaSettings> options,
-        IKernelMemoryServiceFactory kernelMemoryServiceFactory,
+        IMemoryOperationExecutor memoryOperationExecutor,
         TagManagerViewModel tagManagerViewModel,
         StorageManagementViewModel storageManagementViewModel)
     {
-        Guard.IsNotNull(options);
-        Guard.IsNotNull(kernelMemoryServiceFactory);
         Guard.IsNotNull(tagManagerViewModel);
         Guard.IsNotNull(storageManagementViewModel);
 
-        _options = options;
-        _kernelMemoryServiceFactory = kernelMemoryServiceFactory;
+        _memoryOperationExecutor = memoryOperationExecutor;
         TagManagerViewModel = tagManagerViewModel;
         StorageManagementViewModel = storageManagementViewModel;
     }
@@ -105,38 +96,12 @@ public partial class AddFileToMemoryViewModel : ObservableObject
 
         foreach (var file in fileNames)
         {
-            await ExecuteMemoryOperationAsync(
+            await _memoryOperationExecutor.ExecuteMemoryOperationAsync(
                 async memoryServiceDecorator =>
                     await memoryServiceDecorator.ImportDocumentAsync(
                         filePath: file,
                         index: this.StorageManagementViewModel.SelectedItem,
                         tags: tagsCollection));
-        }
-    }
-
-    /// <summary>
-    /// Executes a memory operation asynchronously.
-    /// </summary>
-    /// <typeparam name="T">The type of the result.</typeparam>
-    /// <param name="operation">The memory operation to execute.</param>
-    /// <returns>A task representing the asynchronous operation, with a result of the specified type.</returns>
-    private async Task<T> ExecuteMemoryOperationAsync<T>(Func<MemoryServiceDecorator, Task<T>> operation)
-    {
-        try
-        {
-            var host = _kernelMemoryServiceFactory.CreateHostWithDefaultMemoryPipeline();
-            await host.StartAsync(CancellationToken.None);
-
-            var memoryServiceDecorator = host.Services.GetRequiredService<MemoryServiceDecorator>();
-            var result = await operation(memoryServiceDecorator);
-
-            await host.StopAsync(CancellationToken.None);
-            return result;
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            throw;
         }
     }
 }
