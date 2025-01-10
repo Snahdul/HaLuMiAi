@@ -13,6 +13,7 @@ using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.DocumentStorage.DevTools;
 using Microsoft.KernelMemory.Handlers;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
+using System.IO.Abstractions;
 
 namespace HaMiAi.Implementation;
 
@@ -20,8 +21,10 @@ namespace HaMiAi.Implementation;
 /// Factory for creating the kernel memory service.
 /// </summary>
 /// <param name="options">The application settings for Ollama options.</param>
-public class KernelMemoryServiceFactory(ILoggerFactory? loggerFactory, IOptions<OllamaSettings> options) : IKernelMemoryServiceFactory
+public class KernelMemoryServiceFactory(ILoggerFactory? loggerFactory, IFileSystem fileSystem, IOptions<OllamaSettings> options) : IKernelMemoryServiceFactory
 {
+    private readonly IFileSystem _fileSystem = fileSystem;
+
     private readonly ILogger<KernelMemoryServiceFactory> _logger =
         (loggerFactory ?? DefaultLogger.Factory).CreateLogger<KernelMemoryServiceFactory>();
 
@@ -50,7 +53,7 @@ public class KernelMemoryServiceFactory(ILoggerFactory? loggerFactory, IOptions<
             .WithSimpleFileStorage(SimpleFileStorageConfig.Persistent);
 
         MemoryServerless memoryServerless = memoryBuilder.Build<MemoryServerless>();
-        MemoryServiceDecorator memoryServiceDecorator = new(new NullLoggerFactory(), memoryServerless);
+        MemoryServiceDecorator memoryServiceDecorator = new(new NullLoggerFactory(), _fileSystem, memoryServerless);
 
         memoryBuilder.Services.AddSingleton<MemoryServiceDecorator>(memoryServiceDecorator);
 
@@ -127,7 +130,7 @@ public class KernelMemoryServiceFactory(ILoggerFactory? loggerFactory, IOptions<
         //IKernelMemory memory = memoryBuilder.Build<MemoryServerless>();
 
         MemoryService memoryService = memoryBuilder.Build<MemoryService>();
-        MemoryServiceDecorator memoryServiceDecorator = new(new NullLoggerFactory(), memoryService);
+        MemoryServiceDecorator memoryServiceDecorator = new(new NullLoggerFactory(), fileSystem, memoryService);
 
         host.Services.AddSingleton<MemoryServiceDecorator>(memoryServiceDecorator);
 
