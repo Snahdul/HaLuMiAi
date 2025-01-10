@@ -11,7 +11,6 @@ using Serilog;
 using System.IO.Abstractions;
 using System.Reflection;
 using Wpf.Ui;
-using WPFUiDesktopApp.Models;
 using WPFUiDesktopApp.Services;
 using WPFUiDesktopApp.Settings;
 using WPFUiDesktopApp.Views.Windows;
@@ -98,8 +97,6 @@ internal class Hosting
                 services.AddSingleton<INavigationWindow, MainWindow>();
 
                 services.AddSingleton<IFileDialogService, FileDialogService>();
-
-                services.AddSingleton<OllamaMemoryModel>();
             }).UseSerilog((context, services, configuration) => configuration
                 .ReadFrom.Configuration(context.Configuration)
                 .ReadFrom.Services(services)

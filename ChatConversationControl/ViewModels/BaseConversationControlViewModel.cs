@@ -78,11 +78,11 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
     /// <summary>
     /// Clears the conversation.
     /// </summary>
-    private async Task ClearConversationAsync()
+    private Task ClearConversationAsync()
     {
         // Clear the conversation list
         ConversationList.Clear();
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -98,10 +98,10 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
             ColorString = "LightBlue"
         };
 
+        IsLoading = true;
+
         try
         {
-            IsLoading = true;
-
             // Add the response message item to the conversation list
             ConversationList.Add(responseMessageItem);
 
@@ -132,12 +132,12 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
             ColorString = "LightBlue"
         };
 
+        IsLoading = true;
+
         try
         {
-            IsLoading = true;
-
             // Add the response message item to the conversation list on the UI thread
-            await Application.Current.Dispatcher.BeginInvoke(() =>
+            await Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 ConversationList.Add(responseMessageItem);
             });
@@ -145,16 +145,18 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
             // Stream the response from the chat client
             await foreach (var part in ChatClient.CompleteStreamingAsync(promptString).ConfigureAwait(false))
             {
-                if (part.Text != null)
+                if (part.Text == null)
                 {
-                    Debug.WriteLine(part.Text);
-
-                    // Update the UI-bound property on the UI thread
-                    await Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-                    {
-                        responseMessageItem.AppendText(part.Text);
-                    }));
+                    continue;
                 }
+
+                Debug.WriteLine(part.Text);
+
+                // Update the UI-bound property on the UI thread
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    responseMessageItem.AppendText(part.Text);
+                });
             }
         }
         finally
@@ -162,4 +164,5 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
             IsLoading = false;
         }
     }
+
 }

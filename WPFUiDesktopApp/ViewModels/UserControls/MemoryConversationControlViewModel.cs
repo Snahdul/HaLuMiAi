@@ -1,10 +1,11 @@
 using ChatConversationControl.Contracts;
 using ChatConversationControl.ViewModels;
 using CommunityToolkit.Diagnostics;
+using HaMiAi.Contracts;
 using Microsoft.Extensions.AI;
+using Microsoft.KernelMemory;
 using System.Text;
 using Wpf.Ui.Controls;
-using WPFUiDesktopApp.Models;
 
 namespace WPFUiDesktopApp.ViewModels.UserControls;
 
@@ -13,50 +14,45 @@ namespace WPFUiDesktopApp.ViewModels.UserControls;
 /// </summary>
 public partial class MemoryConversationControlViewModel : BaseConversationControlViewModel, INavigationAware
 {
-    public StorageManagementViewModel StorageManagementViewModel { get; }
-    private readonly OllamaMemoryModel _ollamaKernelMemory;
+    private readonly IMemoryOperationExecutor _memoryOperationExecutor;
+    private CancellationTokenSource? _cancellationTokenSource;
+    private Task? _loadIndexesTask;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MemoryConversationControlViewModel"/> class.
     /// </summary>
+    /// <param name="memoryOperationExecutor">The executor for memory operations.</param>
     /// <param name="conversationManager">The conversation manager.</param>
     /// <param name="chatClient">The chat client.</param>
-    /// <param name="ollamaKernelMemory">The Ollama kernel memory model.</param>
     /// <param name="storageManagementViewModel">The storage management view model.</param>
     /// <exception cref="ArgumentNullException">
-    /// Thrown if <paramref name="conversationManager" /> or <paramref name="chatClient" /> or <paramref name="ollamaKernelMemory" /> is <see langword="null" />.
+    /// Thrown if <paramref name="conversationManager" /> or <paramref name="chatClient" /> is <see langword="null" />.
     /// </exception>
     public MemoryConversationControlViewModel(
+        IMemoryOperationExecutor memoryOperationExecutor,
         IConversationManager conversationManager,
         IChatClient chatClient,
-        OllamaMemoryModel ollamaKernelMemory,
         StorageManagementViewModel storageManagementViewModel) : base(conversationManager, chatClient)
     {
+        Guard.IsNotNull(memoryOperationExecutor);
         Guard.IsNotNull(conversationManager);
         Guard.IsNotNull(chatClient);
-        Guard.IsNotNull(ollamaKernelMemory);
         Guard.IsNotNull(storageManagementViewModel);
 
-        _ollamaKernelMemory = ollamaKernelMemory;
         StorageManagementViewModel = storageManagementViewModel;
+        _memoryOperationExecutor = memoryOperationExecutor;
     }
 
     #region Implementation of INavigationAware
 
     /// <inheritdoc />
-    public async void OnNavigatedTo()
+    public void OnNavigatedTo()
     {
-        var indexes = await _ollamaKernelMemory.ListIndexesAsync();
+        // Initialize the CancellationTokenSource
+        _cancellationTokenSource = new CancellationTokenSource();
 
-        foreach (var indexDetail in indexes)
-        {
-            this.StorageManagementViewModel.StorageIndexes.Add(indexDetail.Name);
-        }
-
-        if (this.StorageManagementViewModel.StorageIndexes.Any())
-        {
-            StorageManagementViewModel.SelectedItem = this.StorageManagementViewModel.StorageIndexes.First();
-        }
+        // Start the asynchronous operation without awaiting it
+        _loadIndexesTask = LoadIndexesAsync(_cancellationTokenSource.Token);
     }
 
     /// <inheritdoc />
@@ -85,14 +81,15 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
                 return;
             }
 
-            var response = await _ollamaKernelMemory.AskAsync(promptText, StorageManagementViewModel.SelectedItem);
+            var memoryAnswer = await _memoryOperationExecutor.ExecuteMemoryOperationAsync(async memoryServiceDecorator =>
+                await memoryServiceDecorator.AskAsync(promptText, StorageManagementViewModel.SelectedItem));
 
-            if (response is null || string.IsNullOrEmpty(response.Result))
+            if (memoryAnswer.NoResult || string.IsNullOrEmpty(memoryAnswer.Result))
             {
                 return;
             }
 
-            StringBuilder stringBuilder = new(response.Result);
+            StringBuilder stringBuilder = new(memoryAnswer.Result);
             stringBuilder.Append(promptText);
 
             IsLoading = false;
@@ -106,4 +103,38 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
     }
 
     #endregion
+
+    public StorageManagementViewModel StorageManagementViewModel { get; }
+
+    private async Task LoadIndexesAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var indexes = await _memoryOperationExecutor.ExecuteMemoryOperationAsync(async memoryServiceDecorator =>
+                await memoryServiceDecorator.ListIndexesAsync(cancellationToken).ConfigureAwait(false), cancellationToken);
+
+            // Update UI elements on the UI thread
+            await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                foreach (var indexDetail in indexes)
+                {
+                    StorageManagementViewModel.StorageIndexes.Add(indexDetail.Name);
+                }
+
+                if (StorageManagementViewModel.StorageIndexes.Any())
+                {
+                    StorageManagementViewModel.SelectedItem = StorageManagementViewModel.StorageIndexes.First();
+                }
+            });
+        }
+        catch (OperationCanceledException)
+        {
+            // Handle task cancellation if needed
+        }
+        catch (Exception ex)
+        {
+            // Handle other exceptions as appropriate
+            // Consider logging the exception or displaying an error message
+        }
+    }
 }
