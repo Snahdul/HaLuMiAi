@@ -124,7 +124,7 @@ public partial class AddFileToMemoryViewModel : ObservableObject
     {
         try
         {
-            var host = _kernelMemoryServiceFactory.CreateHostWithDefaultMemoryPipeline(options: _options);
+            var host = _kernelMemoryServiceFactory.CreateHostWithDefaultMemoryPipeline();
             await host.StartAsync(CancellationToken.None);
 
             var memoryServiceDecorator = host.Services.GetRequiredService<MemoryServiceDecorator>();

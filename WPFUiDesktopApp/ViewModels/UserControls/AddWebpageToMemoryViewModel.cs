@@ -69,7 +69,7 @@ public partial class AddWebpageToMemoryViewModel : ObservableObject
     /// <returns>A task representing the asynchronous operation, with a result of the specified type.</returns>
     private async Task<T> ExecuteMemoryOperationAsync<T>(Func<MemoryServiceDecorator, Task<T>> operation)
     {
-        var host = _kernelMemoryServiceFactory.CreateHostWithDefaultMemoryPipeline(options: _options);
+        var host = _kernelMemoryServiceFactory.CreateHostWithDefaultMemoryPipeline();
         await host.StartAsync(CancellationToken.None);
 
         var memoryServiceDecorator = host.Services.GetRequiredService<MemoryServiceDecorator>();

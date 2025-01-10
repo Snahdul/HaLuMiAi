@@ -19,7 +19,8 @@ namespace HaMiAi.Implementation;
 /// <summary>
 /// Factory for creating the kernel memory service.
 /// </summary>
-public class KernelMemoryServiceFactory(ILoggerFactory? loggerFactory) : IKernelMemoryServiceFactory
+/// <param name="options">The application settings for Ollama options.</param>
+public class KernelMemoryServiceFactory(ILoggerFactory? loggerFactory, IOptions<OllamaSettings> options) : IKernelMemoryServiceFactory
 {
     private readonly ILogger<KernelMemoryServiceFactory> _logger =
         (loggerFactory ?? DefaultLogger.Factory).CreateLogger<KernelMemoryServiceFactory>();
@@ -29,7 +30,7 @@ public class KernelMemoryServiceFactory(ILoggerFactory? loggerFactory) : IKernel
     /// </summary>
     /// <param name="options">The application settings for Ollama options.</param>
     /// <returns>The created host.</returns>
-    public IHost CreateHostWithDefaultMemoryPipeline(IOptions<OllamaSettings> options)
+    public IHost CreateHostWithDefaultMemoryPipeline()
     {
         var ollamaSettings = options.Value;
 
@@ -64,11 +65,9 @@ public class KernelMemoryServiceFactory(ILoggerFactory? loggerFactory) : IKernel
     /// <summary>
     /// Creates the host with a custom memory pipeline.
     /// </summary>
-    /// <param name="options">The application settings for Ollama options.</param>
     /// <param name="handlers">The handlers to register in the pipeline.</param>
     /// <returns>The created host.</returns>
-    public IHost CreateHostWithCustomMemoryPipeline(IOptions<OllamaSettings> options,
-        Type[] handlers)
+    public IHost CreateHostWithCustomMemoryPipeline(Type[] handlers)
     {
         var ollamaSettings = options.Value;
 

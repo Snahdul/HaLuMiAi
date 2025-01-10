@@ -1,6 +1,4 @@
-﻿using Common.Settings;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Hosting;
 
 namespace HaMiAi.Contracts
 {
@@ -9,17 +7,14 @@ namespace HaMiAi.Contracts
         /// <summary>
         /// Creates the host with the default memory pipeline.
         /// </summary>
-        /// <param name="options">The application settings for Ollama options.</param>
         /// <returns>The created host.</returns>
-        IHost CreateHostWithDefaultMemoryPipeline(IOptions<OllamaSettings> options);
+        IHost CreateHostWithDefaultMemoryPipeline();
 
         /// <summary>
         /// Creates the host with a custom memory pipeline.
         /// </summary>
-        /// <param name="options">The application settings for Ollama options.</param>
         /// <param name="handlers">The handlers to register in the pipeline.</param>
         /// <returns>The created host.</returns>
-        IHost CreateHostWithCustomMemoryPipeline(IOptions<OllamaSettings> options,
-            Type[] handlers);
+        IHost CreateHostWithCustomMemoryPipeline(Type[] handlers);
     }
 }
