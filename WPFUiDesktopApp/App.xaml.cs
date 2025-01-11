@@ -96,7 +96,9 @@ public partial class App
         // Run the asynchronous operation asynchronously
         try
         {
+#pragma warning disable VSTHRD002
             AppHost.StopAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
+#pragma warning restore VSTHRD002
         }
         catch (Exception ex)
         {

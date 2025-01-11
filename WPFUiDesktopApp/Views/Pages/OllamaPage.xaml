@@ -6,6 +6,7 @@
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       xmlns:pages="clr-namespace:WPFUiDesktopApp.Views.Pages"
       xmlns:controls="clr-namespace:ChatConversationControl.Controls;assembly=ChatConversationControl"
+      xmlns:userControls="clr-namespace:WPFUiDesktopApp.Views.UserControls"
       mc:Ignorable="d" 
       d:DataContext="{d:DesignInstance pages:OllamaPage,
                                  IsDesignTimeCreatable=False}"
@@ -50,6 +51,66 @@
                                                   ConversationList="{Binding ConversationList}"
                                                   IsLoading="{Binding IsLoading}"/>
                 </Grid>
+            </ui:TabViewItem>
+
+            <ui:TabViewItem>
+                <ui:TabViewItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Margin="0,0,6,0" Symbol="XboxConsole24" />
+                        <TextBlock Text="Memory Query" />
+                    </StackPanel>
+                </ui:TabViewItem.Header>
+                <Grid Background="{DynamicResource ApplicationBackgroundBrush}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <controls:MemoryConversationControl Grid.Row="1"
+                                                         DataContext="{Binding ViewModel.OllamaMemoryViewModel.ConversationControlViewModel}" 
+                                                         ClearConversationCommand="{Binding ClearConversationAsyncCommand}"
+                                                         SaveConversationCommand="{Binding SaveConversationAsyncCommand}"
+                                                         LoadConversationCommand="{Binding LoadConversationAsyncCommand}"
+                                                         SendPromptCommand="{Binding SendPromptStreamAsyncCommand}"
+                                                         ConversationList="{Binding ConversationList}"
+                                                         IsLoading="{Binding IsLoading}"
+                                                         SelectedStorageIndex="{Binding StorageManagementViewModel.SelectedItem, Mode=TwoWay}"
+                                                         StorageIndexes="{Binding StorageManagementViewModel.StorageIndexes, Mode=TwoWay}"/>
+                </Grid>
+            </ui:TabViewItem>
+
+            <ui:TabViewItem>
+                <ui:TabViewItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Margin="0,0,6,0" Symbol="XboxConsole24" />
+                        <TextBlock Text="Memory Management" />
+                    </StackPanel>
+                </ui:TabViewItem.Header>
+                <ui:TabView Margin="0,8,0,0">
+                    <ui:TabViewItem IsSelected="True">
+                        <ui:TabViewItem.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon Margin="0,0,6,0" Symbol="XboxConsole24" />
+                                <TextBlock Text="Add file" />
+                            </StackPanel>
+                        </ui:TabViewItem.Header>
+                        <Grid Background="{DynamicResource ApplicationBackgroundBrush}">
+                            <userControls:AddFileToMemoryUserControl DataContext="{Binding ViewModel.AddFileToMemoryViewModel}"/>
+                        </Grid>
+                    </ui:TabViewItem>
+                    <ui:TabViewItem IsSelected="True">
+                        <ui:TabViewItem.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon Margin="0,0,6,0" Symbol="XboxConsole24" />
+                                <TextBlock Text="Add webpage" />
+                            </StackPanel>
+                        </ui:TabViewItem.Header>
+                        <Grid Background="{DynamicResource ApplicationBackgroundBrush}">
+                            <userControls:AddWebpageToMemoryUserControl DataContext="{Binding ViewModel.AddWebpageToMemoryViewModel}"/>
+                        </Grid>
+                    </ui:TabViewItem>
+                </ui:TabView>
+
             </ui:TabViewItem>
         </ui:TabView>
     </Grid>

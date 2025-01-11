@@ -2,7 +2,8 @@
 using Autofac.Extensions.DependencyInjection;
 using ChatConversationControl.Contracts;
 using ChatConversationControl.Implementation;
-using HaMiAI;
+using Common.Settings;
+using HaMiAi;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -38,10 +39,7 @@ internal class Hosting
                     throw new InvalidOperationException("AppSettings must not be null.");
                 }
 
-                var endpointUri = new Uri(appSettings.OllamaSettings.Endpoint);
-                var modelId = appSettings.OllamaSettings.TextModelId;
-
-                builder.RegisterModule(new HaMiAIModule(endpointUri, modelId));
+                builder.RegisterModule(new HaMiAIModule(appSettings.OllamaSettings));
 
                 // Register IFileSystem with its implementation
                 builder.RegisterType<FileSystem>().As<IFileSystem>().SingleInstance();
@@ -49,6 +47,9 @@ internal class Hosting
                 // Register view models and views
                 RegisterViewModels(builder);
                 RegisterViews(builder);
+
+                // Register custom registration source for logging missing registrations
+                builder.RegisterSource(new MissingRegistrationLogger());
             })
             .ConfigureAppConfiguration((context, config) =>
             {
@@ -68,6 +69,9 @@ internal class Hosting
                 services.AddOptions<AppSettings>()
                     .Bind(configuration.GetSection("AppSettings"))
                     .Validate(appSettings => !string.IsNullOrEmpty(appSettings?.OllamaSettings?.Endpoint), "OllamaSettings.Endpoint must not be null or empty.");
+
+                // Register IOptions<OllamaSettings>
+                services.Configure<OllamaSettings>(configuration.GetSection("AppSettings:OllamaSettings"));
 
                 services.AddHostedService<ApplicationHostService>();
 
@@ -143,4 +147,3 @@ internal class Hosting
         }
     }
 }
-

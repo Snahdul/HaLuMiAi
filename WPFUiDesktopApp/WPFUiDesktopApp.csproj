@@ -25,7 +25,6 @@
 	  </PackageReference>
 	  <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
 	  <PackageReference Include="NTextCat" Version="0.3.65" />
-	  <PackageReference Include="Ollama.NET" Version="1.0.6" />
 	  <PackageReference Include="Serilog" Version="4.2.1-dev-02337" />
 	  <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
 	  <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
@@ -46,6 +45,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ChatConversationControl\ChatConversationControl.csproj" />
+    <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\HaMiAi\HaMiAi.csproj" />
   </ItemGroup>
 

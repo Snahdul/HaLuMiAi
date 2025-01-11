@@ -32,7 +32,7 @@ public partial class MessageItem : ObservableObject
     public void AppendText(string additionalText)
     {
         _textBuilder.Append(additionalText);
-        Text = _textBuilder.ToString();
+        Text += additionalText;
     }
 
     /// <summary>
