@@ -3,7 +3,6 @@ using ChatConversationControl.ViewModels;
 using CommunityToolkit.Diagnostics;
 using HaMiAi.Contracts;
 using Microsoft.Extensions.AI;
-using Microsoft.KernelMemory;
 using System.Text;
 using Wpf.Ui.Controls;
 
@@ -68,21 +67,24 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
     /// Streams the chat asynchronously.
     /// </summary>
     /// <param name="prompt">The prompt to send.</param>
+    /// <param name="cancellationToken">The cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <inheritdoc />
-    protected override async Task DoChatStreamAsync(object? prompt)
+    protected override async Task DoChatStreamAsync(object? prompt, CancellationToken cancellationToken)
     {
+        if (prompt is not string promptText || string.IsNullOrWhiteSpace(promptText))
+        {
+            return;
+        }
+
         IsLoading = true;
 
         try
         {
-            if (prompt is not string promptText || string.IsNullOrWhiteSpace(promptText))
-            {
-                IsLoading = false;
-                return;
-            }
-
             var memoryAnswer = await _memoryOperationExecutor.ExecuteMemoryOperationAsync(async memoryServiceDecorator =>
-                await memoryServiceDecorator.AskAsync(promptText, StorageManagementViewModel.SelectedItem));
+                await memoryServiceDecorator.AskAsync(
+                    promptText,
+                    StorageManagementViewModel.SelectedItem,
+                    cancellationToken: cancellationToken), cancellationToken);
 
             if (memoryAnswer.NoResult || string.IsNullOrEmpty(memoryAnswer.Result))
             {
@@ -94,7 +96,7 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
 
             IsLoading = false;
 
-            await base.DoChatStreamAsync(stringBuilder.ToString());
+            await base.DoChatStreamAsync(stringBuilder.ToString(), cancellationToken);
         }
         finally
         {
@@ -114,7 +116,9 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
                 await memoryServiceDecorator.ListIndexesAsync(cancellationToken).ConfigureAwait(false), cancellationToken);
 
             // Update UI elements on the UI thread
+#pragma warning disable VSTHRD001
             await Application.Current.Dispatcher.InvokeAsync(() =>
+#pragma warning restore VSTHRD001
             {
                 foreach (var indexDetail in indexes)
                 {
@@ -130,11 +134,6 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
         catch (OperationCanceledException)
         {
             // Handle task cancellation if needed
-        }
-        catch (Exception ex)
-        {
-            // Handle other exceptions as appropriate
-            // Consider logging the exception or displaying an error message
         }
     }
 }

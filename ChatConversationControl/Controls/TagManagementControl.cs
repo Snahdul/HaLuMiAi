@@ -10,6 +10,9 @@ namespace ChatConversationControl.Controls;
 /// </summary>
 public class TagManagementControl : Control
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TagManagementControl"/> class.
+    /// </summary>
     static TagManagementControl()
     {
         DefaultStyleKeyProperty.OverrideMetadata(typeof(TagManagementControl), new FrameworkPropertyMetadata(typeof(TagManagementControl)));

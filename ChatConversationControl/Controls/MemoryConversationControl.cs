@@ -7,6 +7,9 @@ namespace ChatConversationControl.Controls;
 /// </summary>
 public class MemoryConversationControl : ConversationControl
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MemoryConversationControl"/> class.
+    /// </summary>
     static MemoryConversationControl()
     {
         DefaultStyleKeyProperty.OverrideMetadata(typeof(MemoryConversationControl), new FrameworkPropertyMetadata(typeof(MemoryConversationControl)));

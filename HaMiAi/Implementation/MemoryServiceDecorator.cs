@@ -23,8 +23,10 @@ public class MemoryServiceDecorator : IKernelMemory
     /// <param name="loggerFactory">The logger factory.</param>
     /// <param name="fileSystem">The file system abstraction.</param>
     /// <param name="kernelMemory">The kernel memory instance to decorate.</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="kernelMemory" /> or <paramref name="fileSystem" /> is <see langword="null" />.</exception>
     public MemoryServiceDecorator(ILoggerFactory? loggerFactory, IFileSystem fileSystem, IKernelMemory kernelMemory)
     {
+        Guard.IsNotNull(fileSystem);
         Guard.IsNotNull(kernelMemory);
 
         _fileSystem = fileSystem;
@@ -35,8 +37,7 @@ public class MemoryServiceDecorator : IKernelMemory
     #region KernelMemoryExtensions
 
     /// <summary>
-    /// Search the given index for an answer to the given query
-    /// and return it without streaming the content.
+    /// Ask the given index for an answer to the given query return it without streaming the content.
     /// </summary>
     /// <param name="question">Question to answer</param>
     /// <param name="index">Optional index name</param>
@@ -57,7 +58,21 @@ public class MemoryServiceDecorator : IKernelMemory
         IContext? context = null,
         CancellationToken cancellationToken = default)
     {
-        Guard.IsNotNullOrWhiteSpace(question);
+        try
+        {
+            Guard.IsNotNullOrWhiteSpace(question);
+        }
+        catch (ArgumentNullException ex)
+        {
+            _logger.LogError(ex, "Argument null error: question is null or whitespace.");
+            return new MemoryAnswer();
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogError(ex, "Argument error: question is null or whitespace.");
+            return new MemoryAnswer();
+        }
+
         return await _kernelMemory.AskAsync(question, index, filter, filters, minRelevance, options, context, cancellationToken);
     }
 
@@ -76,7 +91,21 @@ public class MemoryServiceDecorator : IKernelMemory
         ICollection<MemoryFilter>? filters = null,
         CancellationToken cancellationToken = default)
     {
-        Guard.IsNotNullOrWhiteSpace(syntheticType);
+        try
+        {
+            Guard.IsNotNullOrWhiteSpace(syntheticType);
+        }
+        catch (ArgumentNullException ex)
+        {
+            _logger.LogError(ex, "Argument null error: syntheticType is null or whitespace.");
+            return [];
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogError(ex, "Argument error: syntheticType is null or whitespace.");
+            return [];
+        }
+
         return await _kernelMemory.SearchSyntheticsAsync(syntheticType, index, filter, filters, cancellationToken);
     }
 
@@ -88,13 +117,13 @@ public class MemoryServiceDecorator : IKernelMemory
     /// <param name="filters">Filters to match (using inclusive OR logic). If 'filter' is provided too, the value is merged into this list.</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>List of search results</returns>
-    public Task<List<Citation>> SearchSummariesAsync(
+    public async Task<List<Citation>> SearchSummariesAsync(
         string? index = null,
         MemoryFilter? filter = null,
         ICollection<MemoryFilter>? filters = null,
         CancellationToken cancellationToken = default)
     {
-        return _kernelMemory.SearchSyntheticsAsync(Constants.TagsSyntheticSummary, index, filter, filters, cancellationToken);
+        return await _kernelMemory.SearchSyntheticsAsync(Constants.TagsSyntheticSummary, index, filter, filters, cancellationToken);
     }
 
     #endregion KernelMemoryExtensions
@@ -120,18 +149,16 @@ public class MemoryServiceDecorator : IKernelMemory
         try
         {
             Guard.IsNotNull(filePath);
-            Guard.IsTrue(_fileSystem.File.Exists(filePath));
+            if (!_fileSystem.File.Exists(filePath))
+            {
+                return string.Empty;
+            }
 
             return await _kernelMemory.ImportDocumentAsync(filePath, documentId, tags, index, steps, context, cancellationToken);
         }
         catch (ArgumentNullException ex)
         {
             _logger.LogError(ex, "Argument null error while importing document from file path");
-            return string.Empty;
-        }
-        catch (FileNotFoundException ex)
-        {
-            _logger.LogError(ex, "File not found error while importing document from file path");
             return string.Empty;
         }
     }
@@ -182,6 +209,11 @@ public class MemoryServiceDecorator : IKernelMemory
             _logger.LogError(ex, "Argument null error while importing text");
             return string.Empty;
         }
+        catch (ArgumentException ex)
+        {
+            _logger.LogError(ex, "Argument error while importing text");
+            return string.Empty;
+        }
     }
 
     /// <inheritdoc />
@@ -189,18 +221,18 @@ public class MemoryServiceDecorator : IKernelMemory
     {
         try
         {
-            Guard.IsNotNullOrEmpty(url);
+            Guard.IsNotNullOrWhiteSpace(url);
 
             return await _kernelMemory.ImportWebPageAsync(url, documentId, tags, index, steps, context, cancellationToken);
-        }
-        catch (ArgumentNullException ex)
-        {
-            _logger.LogError(ex, "Argument null error while importing web page");
-            return string.Empty;
         }
         catch (UriFormatException ex)
         {
             _logger.LogError(ex, "URI format error while importing web page");
+            return string.Empty;
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogError(ex, "Argument error: url is null or whitespace.");
             return string.Empty;
         }
     }
@@ -230,6 +262,10 @@ public class MemoryServiceDecorator : IKernelMemory
         {
             _logger.LogError(ex, "Argument null error while deleting document");
         }
+        catch (ArgumentException ex)
+        {
+            _logger.LogError(ex, "Argument is empty error while deleting document");
+        }
     }
 
     /// <inheritdoc />
@@ -243,6 +279,11 @@ public class MemoryServiceDecorator : IKernelMemory
         catch (ArgumentNullException ex)
         {
             _logger.LogError(ex, "Argument null error while checking if document is ready");
+            return false;
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogError(ex, "Argument is empty error while deleting document");
             return false;
         }
     }
@@ -260,10 +301,14 @@ public class MemoryServiceDecorator : IKernelMemory
             _logger.LogError(ex, "Argument null error while getting document status");
             return new DataPipelineStatus();
         }
+        catch (ArgumentException ex)
+        {
+            _logger.LogError(ex, "Argument is empty error while deleting document");
+            return new DataPipelineStatus();
+        }
     }
 
     /// <inheritdoc />
-    /// <exception cref="ArgumentException">Thrown if <paramref name="documentId" /> is empty.</exception>
     public async Task<StreamableFileContent> ExportFileAsync(string documentId, string fileName, string? index = null, CancellationToken cancellationToken = default)
     {
         try
@@ -277,6 +322,11 @@ public class MemoryServiceDecorator : IKernelMemory
         catch (ArgumentNullException ex)
         {
             _logger.LogError(ex, "Argument null error while exporting file");
+            return new StreamableFileContent();
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogError(ex, "Argument is empty error while deleting document");
             return new StreamableFileContent();
         }
         catch (FileNotFoundException ex)
@@ -297,7 +347,7 @@ public class MemoryServiceDecorator : IKernelMemory
         }
         catch (ArgumentException ex)
         {
-            _logger.LogError(ex, "Argument null error while search");
+            _logger.LogError(ex, "Argument error while searching");
             return new SearchResult();
         }
     }
@@ -312,9 +362,14 @@ public class MemoryServiceDecorator : IKernelMemory
         {
             Guard.IsNotNullOrWhiteSpace(question);
         }
-        catch (ArgumentNullException argumentNullException)
+        catch (ArgumentNullException ex)
         {
-            _logger.LogError(argumentNullException, "Argument null error while asking streaming");
+            _logger.LogError(ex, "Argument null error while asking streaming");
+            yield break;
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogError(ex, "Argument error while asking streaming");
             yield break;
         }
 
@@ -326,3 +381,4 @@ public class MemoryServiceDecorator : IKernelMemory
         }
     }
 }
+

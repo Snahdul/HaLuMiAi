@@ -89,7 +89,8 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
     /// Sends a chat prompt and processes the response.
     /// </summary>
     /// <param name="prompt">The chat prompt.</param>
-    protected virtual async Task DoChatAsync(object? prompt)
+    /// <param name="cancellationToken">The cancellation token to use for the operation.</param>
+    protected virtual async Task DoChatAsync(object? prompt, CancellationToken cancellationToken)
     {
         if (prompt is not string promptString || string.IsNullOrWhiteSpace(promptString)) return;
 
@@ -106,7 +107,7 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
             ConversationList.Add(responseMessageItem);
 
             // Send the prompt to the chat client and get the response
-            var response = await ChatClient.CompleteAsync(promptString);
+            var response = await ChatClient.CompleteAsync(promptString, cancellationToken: cancellationToken);
             var responseText = response?.Message.Text ?? "Response could not be generated!";
 
             // Append the response text to the message item
@@ -122,7 +123,8 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
     /// Sends a chat prompt and processes the streaming response.
     /// </summary>
     /// <param name="prompt">The chat prompt.</param>
-    protected virtual async Task DoChatStreamAsync(object? prompt)
+    /// <param name="cancellationToken">The cancellation token to use for the operation.</param>
+    protected virtual async Task DoChatStreamAsync(object? prompt, CancellationToken cancellationToken)
     {
         if (prompt is not string promptString || string.IsNullOrWhiteSpace(promptString))
             return;
@@ -136,14 +138,17 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
 
         try
         {
+            // Switch to the UI thread to add the response message item to the conversation list
+#pragma warning disable VSTHRD001
             // Add the response message item to the conversation list on the UI thread
             await Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 ConversationList.Add(responseMessageItem);
             });
+#pragma warning restore VSTHRD001
 
             // Stream the response from the chat client
-            await foreach (var part in ChatClient.CompleteStreamingAsync(promptString).ConfigureAwait(false))
+            await foreach (var part in ChatClient.CompleteStreamingAsync(promptString, null, cancellationToken).ConfigureAwait(false))
             {
                 if (part.Text == null)
                 {
@@ -153,7 +158,9 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
                 Debug.WriteLine(part.Text);
 
                 // Update the UI-bound property on the UI thread
+#pragma warning disable VSTHRD001
                 await Application.Current.Dispatcher.InvokeAsync(() =>
+#pragma warning restore VSTHRD001
                 {
                     responseMessageItem.AppendText(part.Text);
                 });
@@ -164,5 +171,4 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
             IsLoading = false;
         }
     }
-
 }

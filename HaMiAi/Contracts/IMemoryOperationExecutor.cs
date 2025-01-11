@@ -2,6 +2,9 @@ using HaMiAi.Implementation;
 
 namespace HaMiAi.Contracts;
 
+/// <summary>
+/// Interface for executing memory operations asynchronously.
+/// </summary>
 public interface IMemoryOperationExecutor
 {
     /// <summary>

@@ -1,6 +1,6 @@
 ﻿using Common.Settings;
+using CommunityToolkit.Diagnostics;
 using HaMiAi.Contracts;
-using HaMiAi.Implementation.Handler;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -20,13 +20,29 @@ namespace HaMiAi.Implementation;
 /// <summary>
 /// Factory for creating the kernel memory service.
 /// </summary>
-/// <param name="options">The application settings for Ollama options.</param>
-public class KernelMemoryServiceFactory(ILoggerFactory? loggerFactory, IFileSystem fileSystem, IOptions<OllamaSettings> options) : IKernelMemoryServiceFactory
+public class KernelMemoryServiceFactory : IKernelMemoryServiceFactory
 {
-    private readonly IFileSystem _fileSystem = fileSystem;
+    private readonly IFileSystem _fileSystem;
 
-    private readonly ILogger<KernelMemoryServiceFactory> _logger =
-        (loggerFactory ?? DefaultLogger.Factory).CreateLogger<KernelMemoryServiceFactory>();
+    private readonly ILogger<KernelMemoryServiceFactory> _logger;
+
+    private readonly IOptions<OllamaSettings> _options;
+
+    /// <summary>
+    /// Factory for creating the kernel memory service.
+    /// </summary>
+    /// <param name="loggerFactory">The logger factory used to create a logger for this factory.</param>
+    /// <param name="fileSystem">The file system used to access the file system.</param>
+    /// <param name="options">The application settings for Ollama options.</param>
+    public KernelMemoryServiceFactory(ILoggerFactory? loggerFactory, IFileSystem fileSystem, IOptions<OllamaSettings> options)
+    {
+        Guard.IsNotNull(fileSystem);
+        Guard.IsNotNull(options);
+
+        _options = options;
+        _fileSystem = fileSystem;
+        _logger = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<KernelMemoryServiceFactory>();
+    }
 
     /// <summary>
     /// Creates the host with the default memory pipeline.
@@ -34,14 +50,7 @@ public class KernelMemoryServiceFactory(ILoggerFactory? loggerFactory, IFileSyst
     /// <returns>The created host.</returns>
     public IHost CreateHostWithDefaultMemoryPipeline()
     {
-        var ollamaSettings = options.Value;
-
-        var ollamaConfig = new OllamaConfig
-        {
-            Endpoint = ollamaSettings.Endpoint,
-            TextModel = new OllamaModelConfig(ollamaSettings.TextModelId),
-            EmbeddingModel = new OllamaModelConfig(ollamaSettings.EmbeddingModelId)
-        };
+        OllamaConfig ollamaConfig = OllamaConfig();
 
         var host = new HostApplicationBuilder();
 
@@ -71,14 +80,7 @@ public class KernelMemoryServiceFactory(ILoggerFactory? loggerFactory, IFileSyst
     /// <returns>The created host.</returns>
     public IHost CreateHostWithCustomMemoryPipeline(Type[] handlers)
     {
-        var ollamaSettings = options.Value;
-
-        var ollamaConfig = new OllamaConfig
-        {
-            Endpoint = ollamaSettings.Endpoint,
-            TextModel = new OllamaModelConfig(ollamaSettings.TextModelId),
-            EmbeddingModel = new OllamaModelConfig(ollamaSettings.EmbeddingModelId)
-        };
+        OllamaConfig ollamaConfig = OllamaConfig();
 
         // Alternative for web apps: var host = WebApplication.CreateBuilder();
         HostApplicationBuilder host = new HostApplicationBuilder();
@@ -91,27 +93,19 @@ public class KernelMemoryServiceFactory(ILoggerFactory? loggerFactory, IFileSyst
             .WithSimpleVectorDb(SimpleVectorDbConfig.Persistent)
             .WithSimpleFileStorage(SimpleFileStorageConfig.Persistent);
 
+        var handlerMappings = new Dictionary<Type, string>
+        {
+            { typeof(TextExtractionHandler), Constants.PipelineStepsExtract },
+            { typeof(TextPartitioningHandler), Constants.PipelineStepsPartition },
+            { typeof(GenerateEmbeddingsHandler), Constants.PipelineStepsGenEmbeddings },
+            { typeof(SaveRecordsHandler), Constants.PipelineStepsSaveRecords }
+        };
+
         foreach (var handler in handlers)
         {
-            if (handler == typeof(TextExtractionHandler))
+            if (handlerMappings.TryGetValue(handler, out var pipelineStep))
             {
-                host.Services.AddHandlerAsHostedService(handler, Constants.PipelineStepsExtract);
-            }
-            else if (handler == typeof(TextPartitioningHandler))
-            {
-                host.Services.AddHandlerAsHostedService(handler, Constants.PipelineStepsPartition);
-            }
-            else if (handler == typeof(GenerateEmbeddingsHandler))
-            {
-                host.Services.AddHandlerAsHostedService(handler, Constants.PipelineStepsGenEmbeddings);
-            }
-            else if (handler == typeof(SaveRecordsHandler))
-            {
-                host.Services.AddHandlerAsHostedService(handler, Constants.PipelineStepsSaveRecords);
-            }
-            else if (handler == typeof(HaMiSummarizationHandler))
-            {
-                host.Services.AddHandlerAsHostedService(handler, Constants.PipelineStepsSummarize);
+                host.Services.AddHandlerAsHostedService(handler, pipelineStep);
             }
             else
             {
@@ -130,12 +124,25 @@ public class KernelMemoryServiceFactory(ILoggerFactory? loggerFactory, IFileSyst
         //IKernelMemory memory = memoryBuilder.Build<MemoryServerless>();
 
         MemoryService memoryService = memoryBuilder.Build<MemoryService>();
-        MemoryServiceDecorator memoryServiceDecorator = new(new NullLoggerFactory(), fileSystem, memoryService);
+        MemoryServiceDecorator memoryServiceDecorator = new(new NullLoggerFactory(), _fileSystem, memoryService);
 
         host.Services.AddSingleton<MemoryServiceDecorator>(memoryServiceDecorator);
 
         var hostingApp = host.Build();
 
         return hostingApp;
+    }
+
+    private OllamaConfig OllamaConfig()
+    {
+        var ollamaSettings = _options.Value;
+
+        var ollamaConfig = new OllamaConfig
+        {
+            Endpoint = ollamaSettings.Endpoint,
+            TextModel = new OllamaModelConfig(ollamaSettings.TextModelId),
+            EmbeddingModel = new OllamaModelConfig(ollamaSettings.EmbeddingModelId)
+        };
+        return ollamaConfig;
     }
 }

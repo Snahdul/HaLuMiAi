@@ -5,8 +5,14 @@ using System.Windows.Input;
 
 namespace ChatConversationControl.Controls;
 
+/// <summary>
+/// Storage management control for handling storage-related functionalities.
+/// </summary>
 public class StorageManagementControl : Control
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="StorageManagementControl"/> class.
+    /// </summary>
     static StorageManagementControl()
     {
         DefaultStyleKeyProperty.OverrideMetadata(typeof(StorageManagementControl), new FrameworkPropertyMetadata(typeof(StorageManagementControl)));
