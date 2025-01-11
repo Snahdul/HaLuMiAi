@@ -14,27 +14,33 @@ public partial class AddWebpageToMemoryViewModel : ObservableObject
     [ObservableProperty]
     private Dictionary<string, string> _tags = new();
 
-    [ObservableProperty] private string _storeIndex = string.Empty;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="AddWebpageToMemoryViewModel"/> class.
     /// </summary>
     /// <param name="memoryOperationExecutor"></param>
     /// <param name="tagManagerViewModel">The tag manager view model.</param>
+    /// <param name="storageManagementViewModel">The storage management view model.</param>
     public AddWebpageToMemoryViewModel(
         IMemoryOperationExecutor memoryOperationExecutor,
-        TagManagerViewModel tagManagerViewModel)
+        TagManagerViewModel tagManagerViewModel,
+        StorageManagementViewModel storageManagementViewModel)
     {
         _memoryOperationExecutor = memoryOperationExecutor;
         Guard.IsNotNull(tagManagerViewModel);
 
         TagManagerViewModel = tagManagerViewModel;
+        StorageManagementViewModel = storageManagementViewModel;
     }
 
     /// <summary>
     /// Gets the tag manager view model.
     /// </summary>
     public TagManagerViewModel TagManagerViewModel { get; }
+
+    /// <summary>
+    /// Gets the storage management view model.
+    /// </summary>
+    public StorageManagementViewModel StorageManagementViewModel { get; }
 
     /// <summary>
     /// Adds the webpage to memory.
@@ -49,6 +55,6 @@ public partial class AddWebpageToMemoryViewModel : ObservableObject
         }
 
         await _memoryOperationExecutor.ExecuteMemoryOperationAsync(async memoryServiceDecorator =>
-            await memoryServiceDecorator.ImportWebPageAsync(WebpageUrl, index: StoreIndex));
+            await memoryServiceDecorator.ImportWebPageAsync(WebpageUrl, index: this.StorageManagementViewModel.SelectedItem));
     }
 }

@@ -19,6 +19,21 @@ public class StorageManagementControl : Control
     }
 
     /// <summary>
+    /// Gets or sets the header of the control.
+    /// </summary>
+    public string Header
+    {
+        get => (string)GetValue(HeaderProperty);
+        set => SetValue(HeaderProperty, value);
+    }
+
+    /// <summary>
+    /// Identifies the <see cref="Header"/> dependency property.
+    /// </summary>
+    public static readonly DependencyProperty HeaderProperty =
+        DependencyProperty.Register(nameof(Header), typeof(string), typeof(StorageManagementControl), new PropertyMetadata(string.Empty));
+
+    /// <summary>
     /// Gets or sets the collection of indexes.
     /// </summary>
     public ObservableCollection<string> StorageIndexes

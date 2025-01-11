@@ -12,11 +12,20 @@
             <ui:TextBox Text="{Binding WebpageUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="Enter URL here." Margin="0,5,5,0"/>
             <ui:Button Content="Load Webpage to memory" Command="{Binding AddWebpageToMemoryCommand}" IsEnabled="true" Margin="0,5,0,0"/>
             <Border BorderThickness="10" BorderBrush="Green">
-                <controls:TagManagementControl Margin="5" Tags="{Binding TagManagerViewModel.Tags, Mode=TwoWay}"
+                <StackPanel>
+                    <controls:TagManagementControl Margin="5" Tags="{Binding TagManagerViewModel.Tags, Mode=TwoWay}"
                                                Header="Tag Manager"
                                                AddTagCommand="{Binding TagManagerViewModel.AddTagCommand}"
                                                RemoveTagCommand="{Binding TagManagerViewModel.RemoveTagCommand}" />
-            </Border>
+
+                    <controls:StorageManagementControl
+                    StorageIndexes="{Binding StorageManagementViewModel.StorageIndexes}"
+                    AddIndexCommand="{Binding StorageManagementViewModel.AddIndexCommand}"
+                    RemoveIndexCommand="{Binding StorageManagementViewModel.RemoveIndexCommand}"
+                    SelectedItem="{Binding StorageManagementViewModel.SelectedItem, Mode=TwoWay}"
+                />
+                </StackPanel>
+        </Border>
         </StackPanel>
     </Grid>
 </UserControl>

@@ -1,11 +1,22 @@
+using CommunityToolkit.Diagnostics;
+using HaMiAi.Contracts;
 using System.Collections.ObjectModel;
 
 namespace WPFUiDesktopApp.ViewModels;
 
 public partial class StorageManagementViewModel : ObservableObject
 {
+    private readonly IMemoryOperationExecutor _memoryOperationExecutor;
+
+    public StorageManagementViewModel(IMemoryOperationExecutor memoryOperationExecutor)
+    {
+        Guard.IsNotNull(memoryOperationExecutor);
+
+        _memoryOperationExecutor = memoryOperationExecutor;
+    }
+
     [ObservableProperty]
-    private ObservableCollection<string> _storageIndexes = [];
+    private ObservableCollection<string> _storageIndexes = new();
 
     /// <summary>
     /// The selected storage index item.
@@ -23,10 +34,16 @@ public partial class StorageManagementViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void RemoveIndex(object parameter)
+    private async Task RemoveIndexAsync(object parameter)
     {
         if (parameter is string indexToRemove && StorageIndexes.Contains(indexToRemove))
         {
+            await _memoryOperationExecutor.ExecuteMemoryOperationAsync(async memoryServiceDecorator =>
+            {
+                await memoryServiceDecorator.DeleteIndexAsync(indexToRemove);
+                return Task.CompletedTask;
+            });
+
             StorageIndexes.Remove(indexToRemove);
         }
     }
