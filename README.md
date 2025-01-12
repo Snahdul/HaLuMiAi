@@ -13,6 +13,7 @@ ChatConversationControl is a WPF class library designed to manage and interact w
 
 - .NET 9.0
 - Visual Studio 2022
+- Ollama
 
 ## Getting Started
 
