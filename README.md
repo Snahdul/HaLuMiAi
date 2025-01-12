@@ -1,6 +1,6 @@
 # ChatConversationControl
 
-ChatConversationControl is a WPF class library designed to manage and interact with chat conversations. It leverages the CommunityToolkit.Mvvm for MVVM architecture and Microsoft.Extensions.AI for AI-based chat functionalities.
+ChatConversationControl is a WPF class library designed to manage and interact with chat conversations (Ollama, see settings). It leverages the CommunityToolkit.Mvvm for MVVM architecture and Microsoft.Extensions.AI for AI-based chat functionalities.
 
 ## Features
 
