@@ -98,11 +98,12 @@ internal class Hosting
                 services.AddSingleton<INavigationWindow, MainWindow>();
 
                 services.AddSingleton<IFileDialogService, FileDialogService>();
-            }).UseSerilog((context, services, configuration) => configuration
+            })
+            .UseSerilog((context, services, configuration) => configuration
                 .ReadFrom.Configuration(context.Configuration)
                 .ReadFrom.Services(services)
                 .WriteTo.Console()
-                .WriteTo.File("hami/log/log.txt", rollingInterval: RollingInterval.Day));
+                .WriteTo.File("log/log.txt", rollingInterval: RollingInterval.Day));
 
     /// <summary>
     /// Registers the view models in the Autofac container.

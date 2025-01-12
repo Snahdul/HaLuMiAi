@@ -98,6 +98,10 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
 
             await base.DoChatStreamAsync(stringBuilder.ToString(), cancellationToken);
         }
+        catch (ArgumentOutOfRangeException ex)
+        {
+            // TODO: Handle the System.ArgumentOutOfRangeException
+        }
         finally
         {
             IsLoading = false;
