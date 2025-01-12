@@ -48,7 +48,7 @@ public class KernelMemoryServiceFactory : IKernelMemoryServiceFactory
     /// Creates the host with the default memory pipeline.
     /// </summary>
     /// <returns>The created host.</returns>
-    public IHost CreateHostWithDefaultMemoryPipeline()
+    public IHost CreateOllamaHostWithDefaultMemoryPipeline()
     {
         OllamaConfig ollamaConfig = OllamaConfig();
 
@@ -78,7 +78,7 @@ public class KernelMemoryServiceFactory : IKernelMemoryServiceFactory
     /// </summary>
     /// <param name="handlers">The handlers to register in the pipeline.</param>
     /// <returns>The created host.</returns>
-    public IHost CreateHostWithCustomMemoryPipeline(Type[] handlers)
+    public IHost CreateOllamaHostWithCustomMemoryPipeline(Type[] handlers)
     {
         OllamaConfig ollamaConfig = OllamaConfig();
 
