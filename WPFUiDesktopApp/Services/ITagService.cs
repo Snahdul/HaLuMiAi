@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 
-namespace WPFUiDesktopApp.ViewModels.Pages;
+namespace WPFUiDesktopApp.Services;
 
 /// <summary>
 /// Interface for managing a collection of tags.

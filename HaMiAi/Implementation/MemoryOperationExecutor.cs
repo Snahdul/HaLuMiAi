@@ -37,6 +37,7 @@ public class MemoryOperationExecutor : IMemoryOperationExecutor
     /// <param name="cancellationToken">The cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>A task representing the asynchronous operation, with a result of the specified type.</returns>
     /// <exception cref="Exception">A delegate callback throws an exception.</exception>
+    /// <exception cref="InvalidOperationException">There is no service of type <typeparamref name="T" />.</exception>
     public async Task<T> ExecuteMemoryOperationAsync<T>(Func<MemoryServiceDecorator, Task<T>> operation, CancellationToken cancellationToken = default)
     {
         using var host = _kernelMemoryServiceFactory.CreateOllamaHostWithDefaultMemoryPipeline();

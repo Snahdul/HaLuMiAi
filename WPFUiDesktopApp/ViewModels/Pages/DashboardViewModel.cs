@@ -1,14 +1,13 @@
-﻿namespace WPFUiDesktopApp.ViewModels.Pages
-{
-    public partial class DashboardViewModel : ObservableObject
-    {
-        [ObservableProperty]
-        private int _counter = 0;
+﻿namespace WPFUiDesktopApp.ViewModels.Pages;
 
-        [RelayCommand]
-        private void OnCounterIncrement()
-        {
-            Counter++;
-        }
+public partial class DashboardViewModel : ObservableObject
+{
+    [ObservableProperty]
+    private int _counter = 0;
+
+    [RelayCommand]
+    private void OnCounterIncrement()
+    {
+        Counter++;
     }
 }

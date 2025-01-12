@@ -4,7 +4,6 @@ using HaMiAi.Contracts;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI;
@@ -26,6 +25,7 @@ public class KernelMemoryServiceFactory : IKernelMemoryServiceFactory
 
     private readonly ILogger<KernelMemoryServiceFactory> _logger;
 
+    private readonly ILoggerFactory? _loggerFactory;
     private readonly IOptions<OllamaSettings> _options;
 
     /// <summary>
@@ -34,11 +34,13 @@ public class KernelMemoryServiceFactory : IKernelMemoryServiceFactory
     /// <param name="loggerFactory">The logger factory used to create a logger for this factory.</param>
     /// <param name="fileSystem">The file system used to access the file system.</param>
     /// <param name="options">The application settings for Ollama options.</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="fileSystem" /> or <paramref name="options" /> is <see langword="null" />.</exception>
     public KernelMemoryServiceFactory(ILoggerFactory? loggerFactory, IFileSystem fileSystem, IOptions<OllamaSettings> options)
     {
         Guard.IsNotNull(fileSystem);
         Guard.IsNotNull(options);
 
+        _loggerFactory = loggerFactory;
         _options = options;
         _fileSystem = fileSystem;
         _logger = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<KernelMemoryServiceFactory>();
@@ -62,7 +64,7 @@ public class KernelMemoryServiceFactory : IKernelMemoryServiceFactory
             .WithSimpleFileStorage(SimpleFileStorageConfig.Persistent);
 
         MemoryServerless memoryServerless = memoryBuilder.Build<MemoryServerless>();
-        MemoryServiceDecorator memoryServiceDecorator = new(new NullLoggerFactory(), _fileSystem, memoryServerless);
+        MemoryServiceDecorator memoryServiceDecorator = new(_loggerFactory, _fileSystem, memoryServerless);
 
         memoryBuilder.Services.AddSingleton<MemoryServiceDecorator>(memoryServiceDecorator);
 
@@ -124,7 +126,7 @@ public class KernelMemoryServiceFactory : IKernelMemoryServiceFactory
         //IKernelMemory memory = memoryBuilder.Build<MemoryServerless>();
 
         MemoryService memoryService = memoryBuilder.Build<MemoryService>();
-        MemoryServiceDecorator memoryServiceDecorator = new(new NullLoggerFactory(), _fileSystem, memoryService);
+        MemoryServiceDecorator memoryServiceDecorator = new(_loggerFactory, _fileSystem, memoryService);
 
         host.Services.AddSingleton<MemoryServiceDecorator>(memoryServiceDecorator);
 

@@ -7,6 +7,9 @@ namespace WPFUiDesktopApp.Views.UserControls;
 /// </summary>
 public partial class AddWebpageToMemoryUserControl : UserControl
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AddWebpageToMemoryUserControl"/> class.
+    /// </summary>
     public AddWebpageToMemoryUserControl()
     {
         InitializeComponent();

@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using WPFUiDesktopApp.Services;
 
 namespace WPFUiDesktopApp.ViewModels.Pages;
 
