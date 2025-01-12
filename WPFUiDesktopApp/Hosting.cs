@@ -13,6 +13,7 @@ using System.Reflection;
 using Wpf.Ui;
 using WPFUiDesktopApp.Services;
 using WPFUiDesktopApp.Settings;
+using WPFUiDesktopApp.ViewModels.Pages;
 using WPFUiDesktopApp.Views.Windows;
 
 namespace WPFUiDesktopApp;
@@ -68,7 +69,8 @@ internal class Hosting
                 // Add options services and configure AppSettings with validation
                 services.AddOptions<AppSettings>()
                     .Bind(configuration.GetSection("AppSettings"))
-                    .Validate(appSettings => !string.IsNullOrEmpty(appSettings?.OllamaSettings?.Endpoint), "OllamaSettings.Endpoint must not be null or empty.");
+                    .Validate(appSettings => !string.IsNullOrEmpty(appSettings?.OllamaSettings?.Endpoint),
+                        "OllamaSettings.Endpoint must not be null or empty.");
 
                 // Register IOptions<OllamaSettings>
                 services.Configure<OllamaSettings>(configuration.GetSection("AppSettings:OllamaSettings"));
@@ -91,17 +93,19 @@ internal class Hosting
                 // Service containing navigation, same as INavigationWindow... but without window
                 services.AddSingleton<INavigationService, NavigationService>();
 
-                services.AddSingleton<IConversationManager, ConversationManagerDefault>();
+                services.AddTransient<IConversationManager, ConversationManagerDefault>();
+                services.AddTransient<ITagService, TagService>();
 
                 // Main window with navigation
                 services.AddSingleton<INavigationWindow, MainWindow>();
 
                 services.AddSingleton<IFileDialogService, FileDialogService>();
-            }).UseSerilog((context, services, configuration) => configuration
+            })
+            .UseSerilog((context, services, configuration) => configuration
                 .ReadFrom.Configuration(context.Configuration)
                 .ReadFrom.Services(services)
                 .WriteTo.Console()
-                .WriteTo.File("hami/log/log.txt", rollingInterval: RollingInterval.Day));
+                .WriteTo.File("log/log.txt", rollingInterval: RollingInterval.Day));
 
     /// <summary>
     /// Registers the view models in the Autofac container.

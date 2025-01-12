@@ -48,6 +48,7 @@
                                                   SaveConversationCommand="{Binding SaveConversationAsyncCommand}"
                                                   LoadConversationCommand="{Binding LoadConversationAsyncCommand}"
                                                   SendPromptCommand="{Binding SendPromptStreamAsyncCommand}"
+                                                  CancelCommand="{Binding Path=CancelCommand}"
                                                   ConversationList="{Binding ConversationList}"
                                                   IsLoading="{Binding IsLoading}"/>
                 </Grid>

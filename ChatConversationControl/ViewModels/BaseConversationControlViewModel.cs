@@ -6,6 +6,7 @@ using Microsoft.Extensions.AI;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace ChatConversationControl.ViewModels;
 
@@ -16,6 +17,7 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
 {
     protected readonly IConversationManager ConversationManager;
     protected readonly IChatClient ChatClient;
+    private CancellationTokenSource _cancellationTokenSource;
 
     /// <summary>
     /// Indicates whether the control is in a loading state.
@@ -41,8 +43,11 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
         SaveConversationAsyncCommand = new AsyncRelayCommand(ConversationManager.SaveConversationAsync);
         ClearConversationAsyncCommand = new AsyncRelayCommand(ClearConversationAsync);
         LoadConversationAsyncCommand = new AsyncRelayCommand(ConversationManager.LoadConversationAsync);
-        SendPromptAsyncCommand = new AsyncRelayCommand<object>(DoChatAsync);
-        SendPromptStreamAsyncCommand = new AsyncRelayCommand<object>(DoChatStreamAsync);
+        SendPromptAsyncCommand = new AsyncRelayCommand<object>(prompt => DoChatAsync(prompt, _cancellationTokenSource?.Token ?? CancellationToken.None));
+        SendPromptStreamAsyncCommand = new AsyncRelayCommand<object>(prompt => DoChatStreamAsync(prompt, _cancellationTokenSource?.Token ?? CancellationToken.None));
+        CancelCommand = new AsyncRelayCommand(CancelAsync);
+
+        _cancellationTokenSource = new CancellationTokenSource();
     }
 
     /// <summary>
@@ -71,6 +76,11 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
     public IAsyncRelayCommand<object> SendPromptStreamAsyncCommand { get; }
 
     /// <summary>
+    /// Gets the command to cancel the current operation.
+    /// </summary>
+    public IAsyncRelayCommand CancelCommand { get; }
+
+    /// <summary>
     /// Gets the list of conversation messages.
     /// </summary>
     public ObservableCollection<Messages.MessageItem> ConversationList => ConversationManager.ConversationList;
@@ -83,6 +93,16 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
         // Clear the conversation list
         ConversationList.Clear();
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Cancels the current operation.
+    /// </summary>
+    private async Task CancelAsync()
+    {
+        await _cancellationTokenSource.CancelAsync();
+        await Task.Delay(0); // Ensure the cancellation is processed asynchronously
+        _cancellationTokenSource = new CancellationTokenSource();
     }
 
     /// <summary>
@@ -113,6 +133,11 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
             // Append the response text to the message item
             responseMessageItem.AppendLineText($"{promptString}{Environment.NewLine}Model-Response: {responseText}");
         }
+        catch (OperationCanceledException)
+        {
+            // Handle the cancellation exception
+            Debug.WriteLine("Operation was canceled.");
+        }
         finally
         {
             IsLoading = false;
@@ -141,10 +166,8 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
             // Switch to the UI thread to add the response message item to the conversation list
 #pragma warning disable VSTHRD001
             // Add the response message item to the conversation list on the UI thread
-            await Application.Current.Dispatcher.InvokeAsync(() =>
-            {
-                ConversationList.Add(responseMessageItem);
-            });
+            // ReSharper disable once ExceptionNotDocumented
+            await Application.Current.Dispatcher.InvokeAsync(() => ConversationList.Add(responseMessageItem), DispatcherPriority.Normal, cancellationToken);
 #pragma warning restore VSTHRD001
 
             // Stream the response from the chat client
@@ -159,12 +182,14 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
 
                 // Update the UI-bound property on the UI thread
 #pragma warning disable VSTHRD001
-                await Application.Current.Dispatcher.InvokeAsync(() =>
+                await Application.Current.Dispatcher.InvokeAsync(() => responseMessageItem.AppendText(part.Text), DispatcherPriority.Normal, cancellationToken);
 #pragma warning restore VSTHRD001
-                {
-                    responseMessageItem.AppendText(part.Text);
-                });
             }
+        }
+        catch (OperationCanceledException)
+        {
+            // Handle the cancellation exception
+            Debug.WriteLine("Debug-Out: Operation was canceled.");
         }
         finally
         {

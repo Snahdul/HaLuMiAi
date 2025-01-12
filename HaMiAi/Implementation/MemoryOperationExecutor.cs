@@ -39,7 +39,7 @@ public class MemoryOperationExecutor : IMemoryOperationExecutor
     /// <exception cref="Exception">A delegate callback throws an exception.</exception>
     public async Task<T> ExecuteMemoryOperationAsync<T>(Func<MemoryServiceDecorator, Task<T>> operation, CancellationToken cancellationToken = default)
     {
-        using var host = _kernelMemoryServiceFactory.CreateHostWithDefaultMemoryPipeline();
+        using var host = _kernelMemoryServiceFactory.CreateOllamaHostWithDefaultMemoryPipeline();
         await host.StartAsync(CancellationToken.None);
 
         try

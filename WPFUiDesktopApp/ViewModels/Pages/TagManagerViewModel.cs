@@ -2,37 +2,55 @@
 
 namespace WPFUiDesktopApp.ViewModels.Pages;
 
+/// <summary>
+/// ViewModel for managing tags in the application.
+/// </summary>
 public partial class TagManagerViewModel : ObservableObject
 {
-    public TagManagerViewModel()
+    private readonly ITagService _tagService;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TagManagerViewModel"/> class.
+    /// </summary>
+    public TagManagerViewModel(ITagService tagService)
     {
-        Tags = new ObservableCollection<KeyValuePair<string, string>>();
+        _tagService = tagService;
+        Tags = _tagService.Tags;
     }
 
+    /// <summary>
+    /// Gets the collection of tags.
+    /// </summary>
     [ObservableProperty]
-    private ObservableCollection<KeyValuePair<string, string>> tags;
+    private ObservableCollection<KeyValuePair<string, string>> _tags;
 
+    /// <summary>
+    /// Adds a new tag to the collection.
+    /// </summary>
+    /// <param name="tag">A tuple containing the key and value of the tag.</param>
     [RelayCommand]
     private void AddTag(Tuple<string, string> tag)
     {
-        if (!string.IsNullOrWhiteSpace(tag.Item1) && !string.IsNullOrWhiteSpace(tag.Item2))
-        {
-            Tags.Add(new KeyValuePair<string, string>(tag.Item1, tag.Item2));
-        }
+        _tagService.AddTag(tag);
     }
 
+    /// <summary>
+    /// Removes a tag from the collection by its key.
+    /// </summary>
+    /// <param name="key">The key of the tag to remove.</param>
     [RelayCommand]
     private void RemoveTag(string key)
     {
-        var tagToRemove = Tags.FirstOrDefault(t => t.Key == key);
-        if (!tagToRemove.Equals(default(KeyValuePair<string, string>)))
-        {
-            Tags.Remove(tagToRemove);
-        }
+        _tagService.RemoveTag(key);
     }
 
+    /// <summary>
+    /// Gets the tags as a dictionary.
+    /// </summary>
+    /// <returns>A dictionary containing the tags.</returns>
     public Dictionary<string, string> GetTagsAsDictionary()
     {
-        return Tags.ToDictionary(t => t.Key, t => t.Value);
+        return _tagService.GetTagsAsDictionary();
     }
 }
+

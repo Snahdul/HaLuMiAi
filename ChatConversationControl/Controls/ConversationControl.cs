@@ -137,4 +137,19 @@ public class ConversationControl : Control
         get => GetValue(ConversationListProperty);
         set => SetValue(ConversationListProperty, value);
     }
+
+    /// <summary>
+    /// Identifies the CancelCommand dependency property.
+    /// </summary>
+    public static readonly DependencyProperty CancelCommandProperty =
+        DependencyProperty.Register(nameof(CancelCommand), typeof(ICommand), typeof(ConversationControl), new PropertyMetadata(null));
+
+    /// <summary>
+    /// Gets or sets the command to cancel the current operation.
+    /// </summary>
+    public ICommand CancelCommand
+    {
+        get => (ICommand)GetValue(CancelCommandProperty);
+        set => SetValue(CancelCommandProperty, value);
+    }
 }
