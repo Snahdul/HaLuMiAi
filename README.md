@@ -23,6 +23,7 @@ Ensure you have the following installed:
 
 - [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
 - [Visual Studio 2022](https://visualstudio.microsoft.com/vs/)
+- Ollama
 
 ### Installation
 
