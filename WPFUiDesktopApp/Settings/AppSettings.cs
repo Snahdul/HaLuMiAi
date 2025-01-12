@@ -1,14 +1,22 @@
 ﻿using Common.Settings;
 using Wpf.Ui.Appearance;
 
-namespace WPFUiDesktopApp.Settings
-{
-    public partial class AppSettings : ObservableObject
-    {
-        [ObservableProperty]
-        private OllamaSettings _ollamaSettings = new();
+namespace WPFUiDesktopApp.Settings;
 
-        [ObservableProperty]
-        private ApplicationTheme _currentTheme = ApplicationTheme.Unknown;
-    }
+/// <summary>
+/// Represents the application settings.
+/// </summary>
+public partial class AppSettings : ObservableObject
+{
+    /// <summary>
+    /// Gets or sets the settings for the Ollama service.
+    /// </summary>
+    [ObservableProperty]
+    private OllamaSettings _ollamaSettings = new();
+
+    /// <summary>
+    /// Gets or sets the current application theme.
+    /// </summary>
+    [ObservableProperty]
+    private ApplicationTheme _currentTheme = ApplicationTheme.Unknown;
 }

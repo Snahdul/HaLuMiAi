@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using WPFUiDesktopApp.Services;
 
 namespace WPFUiDesktopApp.ViewModels.Pages;
 
@@ -29,28 +30,22 @@ public partial class TagManagerViewModel : ObservableObject
     /// </summary>
     /// <param name="tag">A tuple containing the key and value of the tag.</param>
     [RelayCommand]
-    private void AddTag(Tuple<string, string> tag)
-    {
+    private void AddTag(Tuple<string, string> tag) =>
         _tagService.AddTag(tag);
-    }
 
     /// <summary>
     /// Removes a tag from the collection by its key.
     /// </summary>
     /// <param name="key">The key of the tag to remove.</param>
     [RelayCommand]
-    private void RemoveTag(string key)
-    {
+    private void RemoveTag(string key) =>
         _tagService.RemoveTag(key);
-    }
 
     /// <summary>
     /// Gets the tags as a dictionary.
     /// </summary>
     /// <returns>A dictionary containing the tags.</returns>
-    public Dictionary<string, string> GetTagsAsDictionary()
-    {
-        return _tagService.GetTagsAsDictionary();
-    }
+    public Dictionary<string, string> GetTagsAsDictionary() =>
+        _tagService.GetTagsAsDictionary();
 }
 

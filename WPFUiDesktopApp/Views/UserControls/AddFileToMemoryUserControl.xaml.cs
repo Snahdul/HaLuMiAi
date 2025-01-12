@@ -7,6 +7,9 @@ namespace WPFUiDesktopApp.Views.UserControls;
 /// </summary>
 public partial class AddFileToMemoryUserControl : UserControl
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AddFileToMemoryUserControl"/> class.
+    /// </summary>
     public AddFileToMemoryUserControl()
     {
         InitializeComponent();

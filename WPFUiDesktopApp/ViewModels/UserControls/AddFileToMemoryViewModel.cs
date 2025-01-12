@@ -6,6 +6,9 @@ using WPFUiDesktopApp.ViewModels.Pages;
 
 namespace WPFUiDesktopApp.ViewModels.UserControls;
 
+/// <summary>
+/// ViewModel for adding files to memory.
+/// </summary>
 public partial class AddFileToMemoryViewModel : ObservableObject
 {
     private readonly IMemoryOperationExecutor _memoryOperationExecutor;
@@ -39,8 +42,14 @@ public partial class AddFileToMemoryViewModel : ObservableObject
         StorageManagementViewModel = storageManagementViewModel;
     }
 
+    /// <summary>
+    /// Gets the tag manager view model.
+    /// </summary>
     public TagManagerViewModel TagManagerViewModel { get; }
 
+    /// <summary>
+    /// Gets the storage management view model.
+    /// </summary>
     public StorageManagementViewModel StorageManagementViewModel { get; }
 
     /// <summary>

@@ -57,6 +57,32 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
     /// <inheritdoc />
     public void OnNavigatedFrom()
     {
+        // Cancel the ongoing task if it is running
+        if (_cancellationTokenSource != null)
+        {
+            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource.Dispose();
+            _cancellationTokenSource = null;
+        }
+
+        // Optionally, you can wait for the task to complete if needed
+        if (_loadIndexesTask == null)
+        {
+            return;
+        }
+
+        try
+        {
+            _loadIndexesTask.Wait();
+        }
+        catch (AggregateException ex) when (ex.InnerExceptions.All(e => e is OperationCanceledException))
+        {
+            // Handle the task cancellation if needed
+        }
+        finally
+        {
+            _loadIndexesTask = null;
+        }
     }
 
     #endregion
