@@ -13,6 +13,7 @@ using System.Reflection;
 using Wpf.Ui;
 using WPFUiDesktopApp.Services;
 using WPFUiDesktopApp.Settings;
+using WPFUiDesktopApp.ViewModels.Pages;
 using WPFUiDesktopApp.Views.Windows;
 
 namespace WPFUiDesktopApp;
@@ -93,6 +94,7 @@ internal class Hosting
                 services.AddSingleton<INavigationService, NavigationService>();
 
                 services.AddTransient<IConversationManager, ConversationManagerDefault>();
+                services.AddTransient<ITagService, TagService>();
 
                 // Main window with navigation
                 services.AddSingleton<INavigationWindow, MainWindow>();
