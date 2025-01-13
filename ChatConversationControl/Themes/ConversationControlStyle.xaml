@@ -28,6 +28,9 @@
 
                         <!-- Buttons for clearing, saving, and loading conversation -->
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="0" Margin="5">
+                            <!-- ToggleButton for UseHistory -->
+                            <ToggleButton Content="Use History" IsChecked="{Binding UseHistory, RelativeSource={RelativeSource TemplatedParent}}" Margin="5" HorizontalAlignment="Left"/>
+
                             <Button Command="{Binding ClearConversationCommand, RelativeSource={RelativeSource TemplatedParent}}" ToolTip="Clear conversation">
                                 <StackPanel Orientation="Horizontal">
                                     <ui:SymbolIcon Symbol="Delete24" Margin="0,0,5,0"/>
@@ -51,7 +54,7 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate DataType="{x:Type messages:MessageItem}">
                                         <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="500" Margin="10">
-                                            <TextBox Text="{Binding Text, Mode=TwoWay}" 
+                                            <TextBox Text="{Binding Path=ChatMessageContent.Content, Mode=TwoWay}" 
                                                      TextWrapping="Wrap" 
                                                      Foreground="{Binding ColorString, Mode=TwoWay, Converter={StaticResource StringToSolidColorBrushConverter}}" 
                                                      Margin="5"/>

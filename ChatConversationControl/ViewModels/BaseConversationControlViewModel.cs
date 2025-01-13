@@ -1,12 +1,19 @@
 ﻿using ChatConversationControl.Contracts;
+using ChatConversationControl.Extensions;
+using ChatConversationControl.Messages;
 using CommunityToolkit.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.AI;
+using Microsoft.KernelMemory;
+using Microsoft.SemanticKernel;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Windows;
 using System.Windows.Threading;
+using AuthorRole = Microsoft.SemanticKernel.ChatCompletion.AuthorRole;
+using ChatHistory = Microsoft.SemanticKernel.ChatCompletion.ChatHistory;
 
 namespace ChatConversationControl.ViewModels;
 
@@ -15,8 +22,10 @@ namespace ChatConversationControl.ViewModels;
 /// </summary>
 public abstract partial class BaseConversationControlViewModel : ObservableObject
 {
+    protected readonly ChatHistory ConversationChatHistory = [];
     protected readonly IConversationManager ConversationManager;
     protected readonly IChatClient ChatClient;
+
     private CancellationTokenSource _cancellationTokenSource;
 
     /// <summary>
@@ -26,11 +35,18 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
     private bool _isLoading;
 
     /// <summary>
+    /// Indicates whether the control should use history.
+    /// </summary>
+    [ObservableProperty]
+    private bool _useHistory;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="BaseConversationControlViewModel"/> class.
     /// </summary>
     /// <param name="conversationManager">The conversation manager.</param>
     /// <param name="chatClient">The chat client.</param>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="conversationManager" /> or <paramref name="chatClient" /> is <see langword="null" />.</exception>
+    [Experimental("SKEXP0001")]
     protected BaseConversationControlViewModel(IConversationManager conversationManager, IChatClient chatClient)
     {
         Guard.IsNotNull(conversationManager);
@@ -92,6 +108,7 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
     {
         // Clear the conversation list
         ConversationList.Clear();
+        ConversationChatHistory.Clear();
         return Task.CompletedTask;
     }
 
@@ -110,38 +127,10 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
     /// </summary>
     /// <param name="prompt">The chat prompt.</param>
     /// <param name="cancellationToken">The cancellation token to use for the operation.</param>
+    [Experimental("SKEXP0001")]
     protected virtual async Task DoChatAsync(object? prompt, CancellationToken cancellationToken)
     {
-        if (prompt is not string promptString || string.IsNullOrWhiteSpace(promptString)) return;
-
-        var responseMessageItem = new Messages.MessageItem
-        {
-            ColorString = "LightBlue"
-        };
-
-        IsLoading = true;
-
-        try
-        {
-            // Add the response message item to the conversation list
-            ConversationList.Add(responseMessageItem);
-
-            // Send the prompt to the chat client and get the response
-            var response = await ChatClient.CompleteAsync(promptString, cancellationToken: cancellationToken);
-            var responseText = response?.Message.Text ?? "Response could not be generated!";
-
-            // Append the response text to the message item
-            responseMessageItem.AppendLineText($"{promptString}{Environment.NewLine}Model-Response: {responseText}");
-        }
-        catch (OperationCanceledException)
-        {
-            // Handle the cancellation exception
-            Debug.WriteLine("Operation was canceled.");
-        }
-        finally
-        {
-            IsLoading = false;
-        }
+        await ProcessChatAsync(prompt, cancellationToken, false);
     }
 
     /// <summary>
@@ -149,47 +138,118 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
     /// </summary>
     /// <param name="prompt">The chat prompt.</param>
     /// <param name="cancellationToken">The cancellation token to use for the operation.</param>
+    [Experimental("SKEXP0001")]
     protected virtual async Task DoChatStreamAsync(object? prompt, CancellationToken cancellationToken)
     {
-        if (prompt is not string promptString || string.IsNullOrWhiteSpace(promptString))
-            return;
-
-        var responseMessageItem = new Messages.MessageItem
+        switch (prompt)
         {
-            ColorString = "LightBlue"
-        };
+            case MemoryAnswer memoryAnswer:
+                {
+                    var assistantChatMessageContent =
+                        new ChatMessageContent(AuthorRole.System, memoryAnswer.Question);
+                    var assistantMessageItem = new Messages.MessageItem(assistantChatMessageContent)
+                    {
+                        ColorString = "Green"
+                    };
+                    ConversationList.Add(assistantMessageItem);
+                    ConversationChatHistory.Add(assistantChatMessageContent);
 
-        IsLoading = true;
+                    var workPrompt = $"{memoryAnswer.Question} {memoryAnswer.Result}";
+
+                    await ProcessChatAsync(workPrompt, cancellationToken, true);
+                }
+                break;
+
+            case string promptString:
+                {
+                    if (string.IsNullOrWhiteSpace(promptString))
+                        return;
+
+                    IsLoading = true;
+
+                    var assistantChatMessageContent = new ChatMessageContent(AuthorRole.Assistant, promptString);
+                    var assistantMessageItem = new Messages.MessageItem(assistantChatMessageContent)
+                    {
+                        ColorString = "Green"
+                    };
+                    ConversationList.Add(assistantMessageItem);
+                    ConversationChatHistory.Add(assistantChatMessageContent);
+
+                    await ProcessChatAsync(promptString, cancellationToken, true);
+                }
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Processes the chat prompt and handles the response.
+    /// </summary>
+    /// <param name="prompt">The chat prompt.</param>
+    /// <param name="cancellationToken">The cancellation token to use for the operation.</param>
+    /// <param name="isStreaming">Indicates whether the response should be streamed.</param>
+    [Experimental("SKEXP0001")]
+    private async Task ProcessChatAsync(object? prompt, CancellationToken cancellationToken, bool isStreaming)
+    {
+        var userChatMessageContent = new ChatMessageContent(AuthorRole.User, prompt?.ToString() ?? string.Empty);
+        var userMessageItem = new MessageItem(userChatMessageContent) { ColorString = "Blue", };
 
         try
         {
-            // Switch to the UI thread to add the response message item to the conversation list
+            // Add the response message item to the conversation list
 #pragma warning disable VSTHRD001
-            // Add the response message item to the conversation list on the UI thread
-            // ReSharper disable once ExceptionNotDocumented
-            await Application.Current.Dispatcher.InvokeAsync(() => ConversationList.Add(responseMessageItem), DispatcherPriority.Normal, cancellationToken);
-#pragma warning restore VSTHRD001
-
-            // Stream the response from the chat client
-            await foreach (var part in ChatClient.CompleteStreamingAsync(promptString, null, cancellationToken).ConfigureAwait(false))
-            {
-                if (part.Text == null)
+            await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    continue;
-                }
-
-                Debug.WriteLine(part.Text);
-
-                // Update the UI-bound property on the UI thread
-#pragma warning disable VSTHRD001
-                await Application.Current.Dispatcher.InvokeAsync(() => responseMessageItem.AppendText(part.Text), DispatcherPriority.Normal, cancellationToken);
+                    ConversationList.Add(userMessageItem);
+                    ConversationChatHistory.Add(userMessageItem.ChatMessageContent);
+                },
+                DispatcherPriority.Normal, cancellationToken);
 #pragma warning restore VSTHRD001
+
+            // Concatenate all messages from ChatHistory
+            var fullPrompt = ConversationChatHistory.GetFullPrompt();
+
+            if (isStreaming)
+            {
+                // Stream the response from the chat client
+                await foreach (var part in ChatClient.CompleteStreamingAsync(fullPrompt, null, cancellationToken)
+                                   .ConfigureAwait(false))
+                {
+                    if (part.Text == null)
+                    {
+                        continue;
+                    }
+
+                    Debug.WriteLine(part.Text);
+
+                    // Update the UI-bound property on the UI thread
+#pragma warning disable VSTHRD001
+                    await Application.Current.Dispatcher.InvokeAsync(() => userMessageItem.AppendText(part.Text),
+                        DispatcherPriority.Normal, cancellationToken);
+#pragma warning restore VSTHRD001
+                }
+            }
+            else
+            {
+                // Send the prompt to the chat client and get the response
+                var response = await ChatClient.CompleteAsync(fullPrompt, cancellationToken: cancellationToken);
+                var responseText = response?.Message.Text ?? "Response could not be generated!";
+
+                // Append the response text to the message item
+                userMessageItem.AppendLineText($"Model-Response: {responseText}");
+            }
+
+            if (UseHistory)
+            {
+                ConversationChatHistory.Add(userMessageItem.ChatMessageContent);
             }
         }
         catch (OperationCanceledException)
         {
             // Handle the cancellation exception
-            Debug.WriteLine("Debug-Out: Operation was canceled.");
+            Debug.WriteLine("Operation was canceled.");
         }
         finally
         {

@@ -48,9 +48,10 @@
                                                   SaveConversationCommand="{Binding SaveConversationAsyncCommand}"
                                                   LoadConversationCommand="{Binding LoadConversationAsyncCommand}"
                                                   SendPromptCommand="{Binding SendPromptStreamAsyncCommand}"
-                                                  CancelCommand="{Binding Path=CancelCommand}"
+                                                  CancelCommand="{Binding CancelCommand}"
                                                   ConversationList="{Binding ConversationList}"
-                                                  IsLoading="{Binding IsLoading}"/>
+                                                  IsLoading="{Binding IsLoading}"
+                                                  UseHistory="{Binding UseHistory, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
                 </Grid>
             </ui:TabViewItem>
 
@@ -77,7 +78,8 @@
                                                          ConversationList="{Binding ConversationList}"
                                                          IsLoading="{Binding IsLoading}"
                                                          SelectedStorageIndex="{Binding StorageManagementViewModel.SelectedItem, Mode=TwoWay}"
-                                                         StorageIndexes="{Binding StorageManagementViewModel.StorageIndexes, Mode=TwoWay}"/>
+                                                         StorageIndexes="{Binding StorageManagementViewModel.StorageIndexes, Mode=TwoWay}"
+                                                         UseHistory="{Binding Path=UseHistory}"/>
                 </Grid>
             </ui:TabViewItem>
 

@@ -1,6 +1,8 @@
 using ChatConversationControl.Contracts;
 using ChatConversationControl.Implementation;
 using ChatConversationControl.Messages;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Moq;
 using System.Collections.ObjectModel;
 using System.IO.Abstractions;
@@ -38,8 +40,8 @@ namespace ChatConversationControl.Test
             var filePath = "test.json";
             var conversationList = new ObservableCollection<MessageItem>
             {
-                new MessageItem { Text = "Hello" },
-                new MessageItem { Text = "World" }
+                new(chatMessageContent: new ChatMessageContent(AuthorRole.System, "Hello")),
+                new(chatMessageContent: new ChatMessageContent(AuthorRole.User, "World"))
             };
             _conversationManager.ConversationList.Add(conversationList[0]);
             _conversationManager.ConversationList.Add(conversationList[1]);
@@ -62,8 +64,8 @@ namespace ChatConversationControl.Test
             var filePath = "test.json";
             var conversationList = new ObservableCollection<MessageItem>
             {
-                new MessageItem { Text = "Hello" },
-                new MessageItem { Text = "World" }
+                new(chatMessageContent: new ChatMessageContent(AuthorRole.System, "Hello")),
+                new(chatMessageContent: new ChatMessageContent(AuthorRole.User, "World"))
             };
             var jsonContent = JsonSerializer.Serialize(conversationList, new JsonSerializerOptions { ReferenceHandler = ReferenceHandler.Preserve });
 
@@ -77,8 +79,8 @@ namespace ChatConversationControl.Test
 
             // Assert
             Assert.Equal(2, _conversationManager.ConversationList.Count);
-            Assert.Equal("Hello", _conversationManager.ConversationList[0].Text);
-            Assert.Equal("World", _conversationManager.ConversationList[1].Text);
+            Assert.Equal("Hello", _conversationManager.ConversationList[0].ChatMessageContent.Content);
+            Assert.Equal("World", _conversationManager.ConversationList[1].ChatMessageContent.Content);
         }
 
         private class TestConversationManager : ConversationManager

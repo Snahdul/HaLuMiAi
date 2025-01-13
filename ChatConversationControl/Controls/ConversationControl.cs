@@ -152,4 +152,19 @@ public class ConversationControl : Control
         get => (ICommand)GetValue(CancelCommandProperty);
         set => SetValue(CancelCommandProperty, value);
     }
+
+    /// <summary>
+    /// Identifies the UseHistory dependency property.
+    /// </summary>
+    public static readonly DependencyProperty UseHistoryProperty =
+        DependencyProperty.Register(nameof(UseHistory), typeof(bool), typeof(ConversationControl), new PropertyMetadata(false));
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the control should use history.
+    /// </summary>
+    public bool UseHistory
+    {
+        get => (bool)GetValue(UseHistoryProperty);
+        set => SetValue(UseHistoryProperty, value);
+    }
 }

@@ -3,7 +3,8 @@ using ChatConversationControl.ViewModels;
 using CommunityToolkit.Diagnostics;
 using HaMiAi.Contracts;
 using Microsoft.Extensions.AI;
-using System.Text;
+using Microsoft.KernelMemory;
+using System.Diagnostics.CodeAnalysis;
 using Wpf.Ui.Controls;
 
 namespace WPFUiDesktopApp.ViewModels.UserControls;
@@ -27,6 +28,7 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
     /// <exception cref="ArgumentNullException">
     /// Thrown if <paramref name="conversationManager" /> or <paramref name="chatClient" /> is <see langword="null" />.
     /// </exception>
+    [Experimental("SKEXP0001")]
     public MemoryConversationControlViewModel(
         IMemoryOperationExecutor memoryOperationExecutor,
         IConversationManager conversationManager,
@@ -95,6 +97,7 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
     /// <param name="prompt">The prompt to send.</param>
     /// <param name="cancellationToken">The cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <inheritdoc />
+    [Experimental("SKEXP0001")]
     protected override async Task DoChatStreamAsync(object? prompt, CancellationToken cancellationToken)
     {
         if (prompt is not string promptText || string.IsNullOrWhiteSpace(promptText))
@@ -102,27 +105,22 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
             return;
         }
 
-        IsLoading = true;
-
         try
         {
-            var memoryAnswer = await _memoryOperationExecutor.ExecuteMemoryOperationAsync(async memoryServiceDecorator =>
-                await memoryServiceDecorator.AskAsync(
-                    promptText,
-                    StorageManagementViewModel.SelectedItem,
-                    cancellationToken: cancellationToken), cancellationToken);
+            IsLoading = true;
+            MemoryAnswer memoryAnswer = await _memoryOperationExecutor.ExecuteMemoryOperationAsync(
+                async memoryServiceDecorator =>
+                    await memoryServiceDecorator.AskAsync(
+                        promptText,
+                        StorageManagementViewModel.SelectedItem,
+                        cancellationToken: cancellationToken), cancellationToken);
 
             if (memoryAnswer.NoResult || string.IsNullOrEmpty(memoryAnswer.Result))
             {
                 return;
             }
 
-            StringBuilder stringBuilder = new(memoryAnswer.Result);
-            stringBuilder.Append(promptText);
-
-            IsLoading = false;
-
-            await base.DoChatStreamAsync(stringBuilder.ToString(), cancellationToken);
+            await base.DoChatStreamAsync(memoryAnswer, cancellationToken);
         }
         catch (ArgumentOutOfRangeException ex)
         {
