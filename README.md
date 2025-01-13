@@ -66,7 +66,7 @@ To run the application, press `F5` or select `Debug > Start Debugging` from the 
 
 - `SendPromptAsyncCommand`: Command to send a chat prompt.
 - `SendPromptStreamAsyncCommand`: Command to send a chat prompt with streaming response.
-- `CancelAsyncCommand`: Command to send a chat prompt.
+- `CancelAsyncCommand`: Command to cancel a send command.
 - `SaveConversationAsyncCommand`: Command to save the conversation.
 - `ClearConversationAsyncCommand`: Command to clear the conversation.
 - `LoadConversationAsyncCommand`: Command to load a conversation.
