@@ -54,7 +54,7 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate DataType="{x:Type messages:MessageItem}">
                                         <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="500" Margin="10">
-                                            <TextBox Text="{Binding Text, Mode=TwoWay}" 
+                                            <TextBox Text="{Binding Path=ChatMessageContent.Content, Mode=TwoWay}" 
                                                      TextWrapping="Wrap" 
                                                      Foreground="{Binding ColorString, Mode=TwoWay, Converter={StaticResource StringToSolidColorBrushConverter}}" 
                                                      Margin="5"/>

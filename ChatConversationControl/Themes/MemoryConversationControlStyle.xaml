@@ -44,13 +44,13 @@
                                   SelectedItem="{Binding SelectedStorageIndex, RelativeSource={RelativeSource TemplatedParent}}" 
                                   Margin="5,0,0,0"/>
                         </StackPanel>
+                        <!-- ScrollViewer for displaying conversation messages -->
                         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Grid.Row="1">
-                            <ItemsControl x:Name="ConversationItemsControl" Margin="5" 
-                                          ItemsSource="{Binding ConversationList, RelativeSource={RelativeSource TemplatedParent}}">
+                            <ItemsControl x:Name="ConversationItemsControl" Margin="5" ItemsSource="{Binding ConversationList, RelativeSource={RelativeSource TemplatedParent}}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate DataType="{x:Type messages:MessageItem}">
                                         <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="500" Margin="10">
-                                            <TextBox Text="{Binding Text, Mode=TwoWay}" 
+                                            <TextBox Text="{Binding Path=ChatMessageContent.Content, Mode=TwoWay}" 
                                                      TextWrapping="Wrap" 
                                                      Foreground="{Binding ColorString, Mode=TwoWay, Converter={StaticResource StringToSolidColorBrushConverter}}" 
                                                      Margin="5"/>

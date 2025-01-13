@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.SemanticKernel;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -21,9 +22,25 @@ public partial class MessageItem : ObservableObject
     /// <summary>
     /// Gets or sets the text for the message.
     /// </summary>
-    [JsonPropertyName("text")]
+    [JsonPropertyName("chatMessageContent")]
     [ObservableProperty]
-    private string _text = string.Empty;
+    private ChatMessageContent _chatMessageContent;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MessageItem"/> class.
+    /// </summary>
+    public MessageItem()
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MessageItem"/> class.
+    /// </summary>
+    /// <param name="chatMessageContent"></param>
+    public MessageItem(ChatMessageContent chatMessageContent)
+    {
+        ChatMessageContent = chatMessageContent;
+    }
 
     /// <summary>
     /// Appends additional text to the existing message text.
@@ -32,7 +49,8 @@ public partial class MessageItem : ObservableObject
     public void AppendText(string additionalText)
     {
         _textBuilder.Append(additionalText);
-        Text += additionalText;
+        ChatMessageContent.Content = _textBuilder.ToString();
+        OnPropertyChanged(nameof(ChatMessageContent));
     }
 
     /// <summary>
@@ -42,6 +60,7 @@ public partial class MessageItem : ObservableObject
     public void AppendLineText(string additionalText)
     {
         _textBuilder.AppendLine(additionalText);
-        Text = _textBuilder.ToString();
+        ChatMessageContent.Content = _textBuilder.ToString();
+        OnPropertyChanged(nameof(ChatMessageContent));
     }
 }
