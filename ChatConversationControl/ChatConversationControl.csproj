@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <ImplicitUsings>enable</ImplicitUsings>
+	  <NoWarn>$(NoWarn)SKEXP0001, SKEXP0010</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

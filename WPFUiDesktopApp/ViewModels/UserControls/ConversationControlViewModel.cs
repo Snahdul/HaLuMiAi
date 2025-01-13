@@ -1,6 +1,7 @@
 using ChatConversationControl.Contracts;
 using ChatConversationControl.ViewModels;
 using Microsoft.Extensions.AI;
+using System.Diagnostics.CodeAnalysis;
 
 namespace WPFUiDesktopApp.ViewModels.UserControls;
 
@@ -17,6 +18,7 @@ public partial class ConversationControlViewModel : BaseConversationControlViewM
     /// <exception cref="ArgumentNullException">
     /// Thrown if <paramref name="conversationManager" /> or <paramref name="chatClient" /> is <see langword="null" />.
     /// </exception>
+    [Experimental("SKEXP0001")]
     public ConversationControlViewModel(
         IConversationManager conversationManager,
         IChatClient chatClient) : base(conversationManager, chatClient)
