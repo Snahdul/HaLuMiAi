@@ -3,18 +3,18 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
-    xmlns:converters1="clr-namespace:ChatConversationControl.Converters"
-    xmlns:controls1="clr-namespace:ChatConversationControl.Controls"
+    xmlns:converters="clr-namespace:ChatConversationControl.Converters"
+    xmlns:controls="clr-namespace:ChatConversationControl.Controls"
     xmlns:messages="clr-namespace:ChatConversationControl.Messages"
     xmlns:behaviors="clr-namespace:ChatConversationControl.Behaviors">
 
     <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-    <converters1:StringToSolidColorBrushConverter x:Key="StringToSolidColorBrushConverter"/>
+    <converters:StringToSolidColorBrushConverter x:Key="StringToSolidColorBrushConverter"/>
 
-    <Style TargetType="{x:Type controls1:MemoryConversationControl}">
+    <Style TargetType="{x:Type controls:MemoryConversationControl}">
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="{x:Type controls1:MemoryConversationControl}">
+                <ControlTemplate TargetType="{x:Type controls:MemoryConversationControl}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -22,6 +22,8 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="0" Margin="5">
+                            <!-- ToggleButton for UseHistory -->
+                            <ToggleButton Content="Use History" IsChecked="{Binding UseHistory, RelativeSource={RelativeSource TemplatedParent}}" Margin="5" HorizontalAlignment="Left"/>
                             <Button Command="{Binding ClearConversationCommand, RelativeSource={RelativeSource TemplatedParent}}" 
                                     ToolTip="Clear conversation">
                                 <StackPanel Orientation="Horizontal">

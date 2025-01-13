@@ -5,6 +5,7 @@ using CommunityToolkit.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.AI;
+using Microsoft.KernelMemory;
 using Microsoft.SemanticKernel;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -140,7 +141,47 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
     [Experimental("SKEXP0001")]
     protected virtual async Task DoChatStreamAsync(object? prompt, CancellationToken cancellationToken)
     {
-        await ProcessChatAsync(prompt, cancellationToken, true);
+        switch (prompt)
+        {
+            case MemoryAnswer memoryAnswer:
+                {
+                    var assistantChatMessageContent =
+                        new ChatMessageContent(AuthorRole.System, memoryAnswer.Question);
+                    var assistantMessageItem = new Messages.MessageItem(assistantChatMessageContent)
+                    {
+                        ColorString = "Green"
+                    };
+                    ConversationList.Add(assistantMessageItem);
+                    ConversationChatHistory.Add(assistantChatMessageContent);
+
+                    var workPrompt = $"{memoryAnswer.Question} {memoryAnswer.Result}";
+
+                    await ProcessChatAsync(workPrompt, cancellationToken, true);
+                }
+                break;
+
+            case string promptString:
+                {
+                    if (string.IsNullOrWhiteSpace(promptString))
+                        return;
+
+                    IsLoading = true;
+
+                    var assistantChatMessageContent = new ChatMessageContent(AuthorRole.Assistant, promptString);
+                    var assistantMessageItem = new Messages.MessageItem(assistantChatMessageContent)
+                    {
+                        ColorString = "Green"
+                    };
+                    ConversationList.Add(assistantMessageItem);
+                    ConversationChatHistory.Add(assistantChatMessageContent);
+
+                    await ProcessChatAsync(promptString, cancellationToken, true);
+                }
+                break;
+
+            default:
+                break;
+        }
     }
 
     /// <summary>
@@ -152,27 +193,19 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
     [Experimental("SKEXP0001")]
     private async Task ProcessChatAsync(object? prompt, CancellationToken cancellationToken, bool isStreaming)
     {
-        if (prompt is not string promptString || string.IsNullOrWhiteSpace(promptString))
-            return;
-
-        IsLoading = true;
-
-        var assistantChatMessageContent = new ChatMessageContent(AuthorRole.Assistant, promptString);
-        var assistantMessageItem = new Messages.MessageItem(assistantChatMessageContent)
-        {
-            ColorString = "Green"
-        };
-        ConversationList.Add(assistantMessageItem);
-        ConversationChatHistory.Add(assistantChatMessageContent);
-
-        var userChatMessageContent = new ChatMessageContent(AuthorRole.User, string.Empty);
-        var userMessageItem = new MessageItem(userChatMessageContent) { ColorString = "Blue" };
+        var userChatMessageContent = new ChatMessageContent(AuthorRole.User, prompt?.ToString() ?? string.Empty);
+        var userMessageItem = new MessageItem(userChatMessageContent) { ColorString = "Blue", };
 
         try
         {
             // Add the response message item to the conversation list
 #pragma warning disable VSTHRD001
-            await Application.Current.Dispatcher.InvokeAsync(() => ConversationList.Add(userMessageItem), DispatcherPriority.Normal, cancellationToken);
+            await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    ConversationList.Add(userMessageItem);
+                    ConversationChatHistory.Add(userMessageItem.ChatMessageContent);
+                },
+                DispatcherPriority.Normal, cancellationToken);
 #pragma warning restore VSTHRD001
 
             // Concatenate all messages from ChatHistory
@@ -181,7 +214,8 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
             if (isStreaming)
             {
                 // Stream the response from the chat client
-                await foreach (var part in ChatClient.CompleteStreamingAsync(fullPrompt, null, cancellationToken).ConfigureAwait(false))
+                await foreach (var part in ChatClient.CompleteStreamingAsync(fullPrompt, null, cancellationToken)
+                                   .ConfigureAwait(false))
                 {
                     if (part.Text == null)
                     {
@@ -192,7 +226,8 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
 
                     // Update the UI-bound property on the UI thread
 #pragma warning disable VSTHRD001
-                    await Application.Current.Dispatcher.InvokeAsync(() => userMessageItem.AppendText(part.Text), DispatcherPriority.Normal, cancellationToken);
+                    await Application.Current.Dispatcher.InvokeAsync(() => userMessageItem.AppendText(part.Text),
+                        DispatcherPriority.Normal, cancellationToken);
 #pragma warning restore VSTHRD001
                 }
             }
@@ -203,7 +238,7 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
                 var responseText = response?.Message.Text ?? "Response could not be generated!";
 
                 // Append the response text to the message item
-                userMessageItem.AppendLineText($"{promptString}{Environment.NewLine}Model-Response: {responseText}");
+                userMessageItem.AppendLineText($"Model-Response: {responseText}");
             }
 
             if (UseHistory)

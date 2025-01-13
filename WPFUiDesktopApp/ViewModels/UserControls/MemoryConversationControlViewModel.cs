@@ -3,8 +3,8 @@ using ChatConversationControl.ViewModels;
 using CommunityToolkit.Diagnostics;
 using HaMiAi.Contracts;
 using Microsoft.Extensions.AI;
+using Microsoft.KernelMemory;
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
 using Wpf.Ui.Controls;
 
 namespace WPFUiDesktopApp.ViewModels.UserControls;
@@ -105,27 +105,22 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
             return;
         }
 
-        IsLoading = true;
-
         try
         {
-            var memoryAnswer = await _memoryOperationExecutor.ExecuteMemoryOperationAsync(async memoryServiceDecorator =>
-                await memoryServiceDecorator.AskAsync(
-                    promptText,
-                    StorageManagementViewModel.SelectedItem,
-                    cancellationToken: cancellationToken), cancellationToken);
+            IsLoading = true;
+            MemoryAnswer memoryAnswer = await _memoryOperationExecutor.ExecuteMemoryOperationAsync(
+                async memoryServiceDecorator =>
+                    await memoryServiceDecorator.AskAsync(
+                        promptText,
+                        StorageManagementViewModel.SelectedItem,
+                        cancellationToken: cancellationToken), cancellationToken);
 
             if (memoryAnswer.NoResult || string.IsNullOrEmpty(memoryAnswer.Result))
             {
                 return;
             }
 
-            StringBuilder stringBuilder = new(memoryAnswer.Result);
-            stringBuilder.Append(promptText);
-
-            IsLoading = false;
-
-            await base.DoChatStreamAsync(stringBuilder.ToString(), cancellationToken);
+            await base.DoChatStreamAsync(memoryAnswer, cancellationToken);
         }
         catch (ArgumentOutOfRangeException ex)
         {
