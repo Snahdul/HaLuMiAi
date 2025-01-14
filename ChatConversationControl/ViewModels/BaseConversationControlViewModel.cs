@@ -172,6 +172,7 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
                     {
                         ColorString = "Green"
                     };
+
                     ConversationList.Add(assistantMessageItem);
                     ConversationChatHistory.Add(assistantChatMessageContent);
 

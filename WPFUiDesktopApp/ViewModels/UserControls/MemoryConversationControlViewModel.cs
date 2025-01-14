@@ -19,6 +19,11 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
     private Task? _loadIndexesTask;
 
     /// <summary>
+    /// Gets or sets the minimum relevance.
+    /// </summary>
+    [ObservableProperty] private double _minRelevance = .6;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="MemoryConversationControlViewModel"/> class.
     /// </summary>
     /// <param name="memoryOperationExecutor">The executor for memory operations.</param>
@@ -113,10 +118,20 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
                     await memoryServiceDecorator.AskAsync(
                         promptText,
                         StorageManagementViewModel.SelectedItem,
+                        minRelevance: MinRelevance,
                         cancellationToken: cancellationToken), cancellationToken);
 
             if (memoryAnswer.NoResult || string.IsNullOrEmpty(memoryAnswer.Result))
             {
+                // display a message to the user
+                var uiMessageBox = new Wpf.Ui.Controls.MessageBox
+                {
+                    Title = "Memory Search - No result",
+                    Content =
+                        $"No result could be found for {MinRelevance}.",
+                };
+
+                _ = await uiMessageBox.ShowDialogAsync(cancellationToken: cancellationToken);
                 return;
             }
 
@@ -125,6 +140,10 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
         catch (ArgumentOutOfRangeException ex)
         {
             // TODO: Handle the System.ArgumentOutOfRangeException
+        }
+        catch (TaskCanceledException ex)
+        {
+            // TODO: Handle the System.Threading.Tasks.TaskCanceledException
         }
         finally
         {

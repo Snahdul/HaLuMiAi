@@ -44,4 +44,19 @@ public class MemoryConversationControl : ConversationControl
         get => (string)GetValue(SelectedStorageIndexProperty);
         set => SetValue(SelectedStorageIndexProperty, value);
     }
+
+    /// <summary>
+    /// Identifies the MinRelevance dependency property.
+    /// </summary>
+    public static readonly DependencyProperty MinRelevanceProperty =
+        DependencyProperty.Register(nameof(MinRelevance), typeof(double), typeof(ConversationControl), new PropertyMetadata(0.0));
+
+    /// <summary>
+    /// Gets or sets the minimum relevance value.
+    /// </summary>
+    public double MinRelevance
+    {
+        get => (double)GetValue(MinRelevanceProperty);
+        set => SetValue(MinRelevanceProperty, value);
+    }
 }
