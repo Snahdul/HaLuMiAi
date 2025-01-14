@@ -79,7 +79,8 @@
                                                          IsLoading="{Binding IsLoading}"
                                                          SelectedStorageIndex="{Binding StorageManagementViewModel.SelectedItem, Mode=TwoWay}"
                                                          StorageIndexes="{Binding StorageManagementViewModel.StorageIndexes, Mode=TwoWay}"
-                                                         UseHistory="{Binding Path=UseHistory}"/>
+                                                         UseHistory="{Binding Path=UseHistory}"
+                                                         MinRelevance="{Binding MinRelevance, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
                 </Grid>
             </ui:TabViewItem>
 
