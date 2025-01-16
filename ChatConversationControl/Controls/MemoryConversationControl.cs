@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using Microsoft.KernelMemory;
+using System.Collections.ObjectModel;
+using System.Windows;
 
 namespace ChatConversationControl.Controls;
 
@@ -58,5 +60,20 @@ public class MemoryConversationControl : ConversationControl
     {
         get => (double)GetValue(MinRelevanceProperty);
         set => SetValue(MinRelevanceProperty, value);
+    }
+
+    /// <summary>
+    /// Identifies the RelevantSources dependency property.
+    /// </summary>
+    public static readonly DependencyProperty RelevantSourcesProperty =
+        DependencyProperty.Register(nameof(RelevantSources), typeof(ObservableCollection<Citation>), typeof(MemoryConversationControl), new PropertyMetadata(new ObservableCollection<Citation>()));
+
+    /// <summary>
+    /// Gets or sets the relevant sources used to produce the answer.
+    /// </summary>
+    public ObservableCollection<Citation> RelevantSources
+    {
+        get => (ObservableCollection<Citation>)GetValue(RelevantSourcesProperty);
+        set => SetValue(RelevantSourcesProperty, value);
     }
 }

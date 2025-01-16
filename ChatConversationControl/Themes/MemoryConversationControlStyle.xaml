@@ -20,6 +20,7 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition />
                         </Grid.RowDefinitions>
 
                         <Grid.ColumnDefinitions>
@@ -62,6 +63,10 @@
                                     <ui:SymbolIcon Symbol="SelectObject24"  Margin="0,0,5,0"/>
                                 </StackPanel>
                             </Button>
+
+                            <ComboBox ItemsSource="{TemplateBinding StorageIndexes}" 
+                                      SelectedItem="{Binding SelectedStorageIndex, RelativeSource={RelativeSource TemplatedParent}}" 
+                                      Margin="5,0,0,0"/>
                         </StackPanel>
 
                         <!-- ScrollViewer for displaying conversation messages -->
@@ -79,7 +84,24 @@
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                         </ScrollViewer>
-                        <Grid Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" Margin="5">
+
+                        <!-- ListBox for displaying relevant sources -->
+                        <ListBox x:Name="RelevantSourcesListBox" Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" Margin="5" ItemsSource="{Binding RelevantSources, RelativeSource={RelativeSource TemplatedParent}}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Vertical">
+                                        <TextBlock Text="{Binding SourceName}" FontWeight="Bold"/>
+                                        <ui:Button 
+                                            Command="{Binding DataContext.HyperlinkRequestNavigateCommand, 
+                                            RelativeSource={RelativeSource AncestorType={x:Type controls:MemoryConversationControl}}}" 
+                                            CommandParameter="{Binding .}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+                        <!-- TextBox for entering prompt -->
+                        <Grid Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="2" Margin="5">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
@@ -121,7 +143,7 @@
                         </Grid>
 
                         <!-- Loading Spinner -->
-                        <ui:ProgressRing Grid.Row="1" IsIndeterminate="True" 
+                        <ui:ProgressRing Grid.Column="0" Grid.Row="1" IsIndeterminate="True" 
                                          Visibility="{TemplateBinding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" />
 
                     </Grid>

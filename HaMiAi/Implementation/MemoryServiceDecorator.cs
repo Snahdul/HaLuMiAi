@@ -315,9 +315,8 @@ public class MemoryServiceDecorator : IKernelMemory
         {
             Guard.IsNotNullOrEmpty(documentId);
             Guard.IsNotNullOrEmpty(fileName);
-            Guard.IsTrue(_fileSystem.File.Exists(fileName));
-
-            return await _kernelMemory.ExportFileAsync(documentId, fileName, index, cancellationToken);
+            var result = await _kernelMemory.ExportFileAsync(documentId, fileName, index, cancellationToken);
+            return result;
         }
         catch (ArgumentNullException ex)
         {

@@ -4,7 +4,11 @@ using CommunityToolkit.Diagnostics;
 using HaMiAi.Contracts;
 using Microsoft.Extensions.AI;
 using Microsoft.KernelMemory;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Windows.Input;
 using Wpf.Ui.Controls;
 
 namespace WPFUiDesktopApp.ViewModels.UserControls;
@@ -22,6 +26,11 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
     /// Gets or sets the minimum relevance.
     /// </summary>
     [ObservableProperty] private double _minRelevance = .6;
+
+    /// <summary>
+    /// Gets or sets the relevant sources.
+    /// </summary>
+    [ObservableProperty] private ObservableCollection<Citation> _relevantSources = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MemoryConversationControlViewModel"/> class.
@@ -112,6 +121,8 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
 
         try
         {
+            RelevantSources.Clear();
+
             IsLoading = true;
             MemoryAnswer memoryAnswer = await _memoryOperationExecutor.ExecuteMemoryOperationAsync(
                 async memoryServiceDecorator =>
@@ -121,19 +132,22 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
                         minRelevance: MinRelevance,
                         cancellationToken: cancellationToken), cancellationToken);
 
-            if (memoryAnswer.NoResult || string.IsNullOrEmpty(memoryAnswer.Result))
+            if (memoryAnswer.NoResult)
             {
                 // display a message to the user
                 var uiMessageBox = new Wpf.Ui.Controls.MessageBox
                 {
                     Title = "Memory Search - No result",
                     Content =
-                        $"No result could be found for {MinRelevance}.",
+                        $"No result could be found. Reason {memoryAnswer.NoResultReason}.",
                 };
 
                 _ = await uiMessageBox.ShowDialogAsync(cancellationToken: cancellationToken);
                 return;
             }
+
+            // Set the relevant sources
+            RelevantSources = new ObservableCollection<Citation>(memoryAnswer.RelevantSources);
 
             await base.DoChatStreamAsync(memoryAnswer, cancellationToken);
         }
@@ -152,6 +166,8 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
     }
 
     #endregion
+
+    public ICommand HyperlinkRequestNavigateCommand => new AsyncRelayCommand<Citation>(HyperlinkRequestNavigate);
 
     public StorageManagementViewModel StorageManagementViewModel { get; }
 
@@ -182,5 +198,46 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
         {
             // Handle task cancellation if needed
         }
+    }
+
+    private async Task HyperlinkRequestNavigate(Citation? commandParameter)
+    {
+        if (commandParameter is null || string.IsNullOrEmpty(commandParameter.SourceUrl))
+        {
+            Debug.WriteLine("Command parameter or SourceUrl is null or empty.");
+            return;
+        }
+
+        var documentId = commandParameter.DocumentId;
+        var index = commandParameter.Index;
+        var filename = commandParameter.SourceName;
+
+        // Debugging statement to check the value of filename
+        Debug.WriteLine($"Filename: {filename}");
+
+        if (string.IsNullOrEmpty(index) || string.IsNullOrEmpty(documentId) || string.IsNullOrEmpty(filename))
+        {
+            Debug.WriteLine("Index, DocumentId, or Filename is null or empty.");
+            return;
+        }
+
+        StreamableFileContent result = await _memoryOperationExecutor.ExecuteMemoryOperationAsync(
+            async memoryServiceDecorator =>
+                await memoryServiceDecorator.ExportFileAsync(documentId: documentId, fileName: filename, index: index));
+        var stream = new MemoryStream();
+        await (await result.GetStreamAsync()).CopyToAsync(stream);
+        var bytes = stream.ToArray();
+
+        await File.WriteAllBytesAsync(filename, bytes);
+    }
+
+    private async Task SaveBytesToFileAsync(byte[] bytes, string filePath)
+    {
+        if (bytes == null || string.IsNullOrEmpty(filePath))
+        {
+            throw new ArgumentNullException(nameof(bytes), "Bytes array or file path cannot be null or empty.");
+        }
+
+        await File.WriteAllBytesAsync(filePath, bytes);
     }
 }
