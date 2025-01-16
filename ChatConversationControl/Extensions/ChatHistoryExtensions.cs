@@ -1,5 +1,4 @@
 ﻿using Microsoft.SemanticKernel.ChatCompletion;
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace ChatConversationControl.Extensions;
@@ -11,7 +10,6 @@ public static class ChatHistoryExtensions
     /// </summary>
     /// <param name="chatHistory">The chat history.</param>
     /// <returns>A string containing all messages in the chat history.</returns>
-    [Experimental("SKEXP0001")]
     public static string GetFullPrompt(this ChatHistory chatHistory)
     {
         var sb = new StringBuilder();

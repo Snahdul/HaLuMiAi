@@ -9,7 +9,6 @@ using Microsoft.KernelMemory;
 using Microsoft.SemanticKernel;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Windows;
 using System.Windows.Threading;
 using AuthorRole = Microsoft.SemanticKernel.ChatCompletion.AuthorRole;
@@ -46,7 +45,6 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
     /// <param name="conversationManager">The conversation manager.</param>
     /// <param name="chatClient">The chat client.</param>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="conversationManager" /> or <paramref name="chatClient" /> is <see langword="null" />.</exception>
-    [Experimental("SKEXP0001")]
     protected BaseConversationControlViewModel(IConversationManager conversationManager, IChatClient chatClient)
     {
         Guard.IsNotNull(conversationManager);
@@ -127,7 +125,6 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
     /// </summary>
     /// <param name="prompt">The chat prompt.</param>
     /// <param name="cancellationToken">The cancellation token to use for the operation.</param>
-    [Experimental("SKEXP0001")]
     protected virtual async Task DoChatAsync(object? prompt, CancellationToken cancellationToken)
     {
         await ProcessChatAsync(prompt, cancellationToken, false);
@@ -138,7 +135,6 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
     /// </summary>
     /// <param name="prompt">The chat prompt.</param>
     /// <param name="cancellationToken">The cancellation token to use for the operation.</param>
-    [Experimental("SKEXP0001")]
     protected virtual async Task DoChatStreamAsync(object? prompt, CancellationToken cancellationToken)
     {
         switch (prompt)
@@ -191,7 +187,6 @@ public abstract partial class BaseConversationControlViewModel : ObservableObjec
     /// <param name="prompt">The chat prompt.</param>
     /// <param name="cancellationToken">The cancellation token to use for the operation.</param>
     /// <param name="isStreaming">Indicates whether the response should be streamed.</param>
-    [Experimental("SKEXP0001")]
     private async Task ProcessChatAsync(object? prompt, CancellationToken cancellationToken, bool isStreaming)
     {
         var userChatMessageContent = new ChatMessageContent(AuthorRole.User, prompt?.ToString() ?? string.Empty);

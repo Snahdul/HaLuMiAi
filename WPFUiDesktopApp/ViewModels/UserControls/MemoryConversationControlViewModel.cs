@@ -6,8 +6,8 @@ using Microsoft.Extensions.AI;
 using Microsoft.KernelMemory;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.IO.Abstractions;
 using System.Windows.Input;
 using Wpf.Ui.Controls;
 
@@ -18,6 +18,7 @@ namespace WPFUiDesktopApp.ViewModels.UserControls;
 /// </summary>
 public partial class MemoryConversationControlViewModel : BaseConversationControlViewModel, INavigationAware
 {
+    private readonly IFileSystem _fileSystem;
     private readonly IMemoryOperationExecutor _memoryOperationExecutor;
     private readonly IProcessManager _processManager;
     private CancellationTokenSource? _cancellationTokenSource;
@@ -36,6 +37,7 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
     /// <summary>
     /// Initializes a new instance of the <see cref="MemoryConversationControlViewModel"/> class.
     /// </summary>
+    /// <param name="fileSystem">File system used to access the file system.</param>
     /// <param name="memoryOperationExecutor">The executor for memory operations.</param>
     /// <param name="conversationManager">The conversation manager.</param>
     /// <param name="chatClient">The chat client.</param>
@@ -44,8 +46,8 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
     /// <exception cref="ArgumentNullException">
     /// Thrown if <paramref name="conversationManager" /> or <paramref name="chatClient" /> is <see langword="null" />.
     /// </exception>
-    [Experimental("SKEXP0001")]
     public MemoryConversationControlViewModel(
+        IFileSystem fileSystem,
         IMemoryOperationExecutor memoryOperationExecutor,
         IConversationManager conversationManager,
         IChatClient chatClient,
@@ -58,6 +60,7 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
         Guard.IsNotNull(storageManagementViewModel);
 
         StorageManagementViewModel = storageManagementViewModel;
+        _fileSystem = fileSystem;
         _memoryOperationExecutor = memoryOperationExecutor;
         _processManager = processManager;
     }
@@ -110,12 +113,11 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
     #region Overrides of BaseConversationControlViewModel
 
     /// <summary>
-    /// Streams the chat asynchronously.
+    /// Ask a query to the memory and if it found some content this is streams the chat asynchronously.
     /// </summary>
     /// <param name="prompt">The prompt to send.</param>
     /// <param name="cancellationToken">The cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <inheritdoc />
-    [Experimental("SKEXP0001")]
     protected override async Task DoChatStreamAsync(object? prompt, CancellationToken cancellationToken)
     {
         if (prompt is not string promptText || string.IsNullOrWhiteSpace(promptText))
@@ -222,9 +224,6 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
         var index = commandParameter.Index;
         var sourceName = commandParameter.SourceName;
 
-        // Debugging statement to check the value of filename
-        Debug.WriteLine($"Filename: {sourceName}");
-
         if (string.IsNullOrEmpty(index) || string.IsNullOrEmpty(documentId) || string.IsNullOrEmpty(sourceName))
         {
             Debug.WriteLine("Index, DocumentId, or Filename is null or empty.");
@@ -243,13 +242,13 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
         _processManager.Open(sourceName);
     }
 
-    private static async Task SaveBytesToFileAsync(byte[] bytes, string filePath)
+    private async Task SaveBytesToFileAsync(byte[] bytes, string filePath)
     {
         if (bytes == null || string.IsNullOrEmpty(filePath))
         {
             throw new ArgumentNullException(nameof(bytes), "Bytes array or file path cannot be null or empty.");
         }
 
-        await File.WriteAllBytesAsync(filePath, bytes);
+        await _fileSystem.File.WriteAllBytesAsync(filePath, bytes);
     }
 }
