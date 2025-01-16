@@ -208,14 +208,22 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
             return;
         }
 
+        var processManager = new ProcessManager();
+
+        if (commandParameter.SourceName.EndsWith(".url"))
+        {
+            processManager.Open(commandParameter.SourceUrl);
+            return;
+        }
+
         var documentId = commandParameter.DocumentId;
         var index = commandParameter.Index;
-        var filename = commandParameter.SourceName;
+        var sourceName = commandParameter.SourceName;
 
         // Debugging statement to check the value of filename
-        Debug.WriteLine($"Filename: {filename}");
+        Debug.WriteLine($"Filename: {sourceName}");
 
-        if (string.IsNullOrEmpty(index) || string.IsNullOrEmpty(documentId) || string.IsNullOrEmpty(filename))
+        if (string.IsNullOrEmpty(index) || string.IsNullOrEmpty(documentId) || string.IsNullOrEmpty(sourceName))
         {
             Debug.WriteLine("Index, DocumentId, or Filename is null or empty.");
             return;
@@ -223,12 +231,14 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
 
         StreamableFileContent result = await _memoryOperationExecutor.ExecuteMemoryOperationAsync(
             async memoryServiceDecorator =>
-                await memoryServiceDecorator.ExportFileAsync(documentId: documentId, fileName: filename, index: index));
+                await memoryServiceDecorator.ExportFileAsync(documentId: documentId, fileName: sourceName, index: index));
         var stream = new MemoryStream();
         await (await result.GetStreamAsync()).CopyToAsync(stream);
         var bytes = stream.ToArray();
 
-        await File.WriteAllBytesAsync(filename, bytes);
+        await SaveBytesToFileAsync(bytes, sourceName);
+
+        processManager.Open(sourceName);
     }
 
     private async Task SaveBytesToFileAsync(byte[] bytes, string filePath)
