@@ -19,6 +19,7 @@ namespace WPFUiDesktopApp.ViewModels.UserControls;
 public partial class MemoryConversationControlViewModel : BaseConversationControlViewModel, INavigationAware
 {
     private readonly IMemoryOperationExecutor _memoryOperationExecutor;
+    private readonly IProcessManager _processManager;
     private CancellationTokenSource? _cancellationTokenSource;
     private Task? _loadIndexesTask;
 
@@ -38,6 +39,7 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
     /// <param name="memoryOperationExecutor">The executor for memory operations.</param>
     /// <param name="conversationManager">The conversation manager.</param>
     /// <param name="chatClient">The chat client.</param>
+    /// <param name="processManager">The process manager.</param>
     /// <param name="storageManagementViewModel">The storage management view model.</param>
     /// <exception cref="ArgumentNullException">
     /// Thrown if <paramref name="conversationManager" /> or <paramref name="chatClient" /> is <see langword="null" />.
@@ -47,6 +49,7 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
         IMemoryOperationExecutor memoryOperationExecutor,
         IConversationManager conversationManager,
         IChatClient chatClient,
+        IProcessManager processManager,
         StorageManagementViewModel storageManagementViewModel) : base(conversationManager, chatClient)
     {
         Guard.IsNotNull(memoryOperationExecutor);
@@ -56,6 +59,7 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
 
         StorageManagementViewModel = storageManagementViewModel;
         _memoryOperationExecutor = memoryOperationExecutor;
+        _processManager = processManager;
     }
 
     #region Implementation of INavigationAware
@@ -208,11 +212,9 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
             return;
         }
 
-        var processManager = new ProcessManager();
-
         if (commandParameter.SourceName.EndsWith(".url"))
         {
-            processManager.Open(commandParameter.SourceUrl);
+            _processManager.Open(commandParameter.SourceUrl);
             return;
         }
 
@@ -238,10 +240,10 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
 
         await SaveBytesToFileAsync(bytes, sourceName);
 
-        processManager.Open(sourceName);
+        _processManager.Open(sourceName);
     }
 
-    private async Task SaveBytesToFileAsync(byte[] bytes, string filePath)
+    private static async Task SaveBytesToFileAsync(byte[] bytes, string filePath)
     {
         if (bytes == null || string.IsNullOrEmpty(filePath))
         {
