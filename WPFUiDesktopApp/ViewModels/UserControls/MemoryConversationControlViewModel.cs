@@ -208,7 +208,9 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
 
     private async Task HyperlinkRequestNavigate(Citation? commandParameter)
     {
-        if (commandParameter is null || string.IsNullOrEmpty(commandParameter.SourceUrl))
+        var sourceUrl = commandParameter?.SourceUrl;
+
+        if (commandParameter is null || string.IsNullOrEmpty(sourceUrl))
         {
             Debug.WriteLine("Command parameter or SourceUrl is null or empty.");
             return;
@@ -216,13 +218,20 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
 
         if (commandParameter.SourceName.EndsWith(".url"))
         {
-            _processManager.Open(commandParameter.SourceUrl);
-            return;
+            _processManager.Open(sourceUrl);
         }
+        else
+        {
+            await PrepareFileAsync(commandParameter);
+            _processManager.Open(commandParameter.SourceName);
+        }
+    }
 
-        var documentId = commandParameter.DocumentId;
-        var index = commandParameter.Index;
-        var sourceName = commandParameter.SourceName;
+    private async Task PrepareFileAsync(Citation? citation)
+    {
+        var documentId = citation.DocumentId;
+        var index = citation.Index;
+        var sourceName = citation.SourceName;
 
         if (string.IsNullOrEmpty(index) || string.IsNullOrEmpty(documentId) || string.IsNullOrEmpty(sourceName))
         {
@@ -238,8 +247,6 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
         var bytes = stream.ToArray();
 
         await SaveBytesToFileAsync(bytes, sourceName);
-
-        _processManager.Open(sourceName);
     }
 
     private async Task SaveBytesToFileAsync(byte[] bytes, string filePath)
