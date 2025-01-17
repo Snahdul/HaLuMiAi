@@ -8,6 +8,8 @@ ChatConversationControl is a WPF class library designed to manage and interact w
 - Send chat prompts and receive responses.
 - Stream chat responses.
 - Clear chat conversations.
+- Retrieval-Augmented Generation (RAG) for enhanced responses.
+- Kernel memory for efficient data handling.
 
 ## Requirements
 
@@ -23,7 +25,7 @@ Ensure you have the following installed:
 
 - [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
 - [Visual Studio 2022](https://visualstudio.microsoft.com/vs/)
-- Ollama
+- [Ollama](https://ollama.com/)
 
 ### Installation
 
@@ -70,6 +72,14 @@ To run the application, press `F5` or select `Debug > Start Debugging` from the 
 - `SaveConversationAsyncCommand`: Command to save the conversation.
 - `ClearConversationAsyncCommand`: Command to clear the conversation.
 - `LoadConversationAsyncCommand`: Command to load a conversation.
+
+## RAG (Retrieval-Augmented Generation)
+
+RAG is used to enhance the responses by retrieving relevant information from a knowledge base before generating the final response. This helps in providing more accurate and contextually relevant answers.
+
+## Kernel Memory
+
+Kernel memory is utilized for efficient data handling and storage within the application. It ensures that the application can manage large amounts of data without performance degradation.
 
 ## Testing
 
