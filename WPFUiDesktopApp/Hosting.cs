@@ -14,6 +14,7 @@ using Wpf.Ui;
 using WPFUiDesktopApp.Services;
 using WPFUiDesktopApp.Settings;
 using WPFUiDesktopApp.ViewModels.Pages;
+using WPFUiDesktopApp.ViewModels.UserControls;
 using WPFUiDesktopApp.Views.Windows;
 
 namespace WPFUiDesktopApp;
@@ -100,6 +101,7 @@ internal class Hosting
                 services.AddSingleton<INavigationWindow, MainWindow>();
 
                 services.AddSingleton<IFileDialogService, FileDialogService>();
+                services.AddTransient<IProcessManager, ProcessManager>();
             })
             .UseSerilog((context, services, configuration) => configuration
                 .ReadFrom.Configuration(context.Configuration)

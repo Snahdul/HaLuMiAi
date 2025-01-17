@@ -20,6 +20,7 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
                         <Grid.ColumnDefinitions>
@@ -62,6 +63,10 @@
                                     <ui:SymbolIcon Symbol="SelectObject24"  Margin="0,0,5,0"/>
                                 </StackPanel>
                             </Button>
+
+                            <ComboBox ItemsSource="{TemplateBinding StorageIndexes}" 
+                                      SelectedItem="{Binding SelectedStorageIndex, RelativeSource={RelativeSource TemplatedParent}}" 
+                                      Margin="5,0,0,0"/>
                         </StackPanel>
 
                         <!-- ScrollViewer for displaying conversation messages -->
@@ -79,49 +84,63 @@
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                         </ScrollViewer>
+
+                        <!-- ListBox for displaying relevant sources -->
+                        <ListBox x:Name="RelevantSourcesListBox" Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" Margin="5" ItemsSource="{Binding RelevantSources, RelativeSource={RelativeSource TemplatedParent}}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Vertical">
+                                        <TextBlock Text="{Binding SourceName}" FontWeight="Bold"/>
+                                        <ui:Button 
+                                            Content="View File"
+                                            Command="{Binding DataContext.HyperlinkRequestNavigateCommand, 
+                                            RelativeSource={RelativeSource AncestorType={x:Type controls:MemoryConversationControl}}}" 
+                                            CommandParameter="{Binding .}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+                        <!-- TextBox for entering prompt -->
                         <Grid Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" Margin="5">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <ui:TextBox
-                            x:Name="PromptTextBox"
-                            Text="{Binding Prompt, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
-                            AcceptsReturn="True"
-                            PlaceholderText="Enter your prompt"
-                            HorizontalAlignment="Stretch"
-                            VerticalAlignment="Stretch"
-                            TextWrapping="Wrap"
-                            MaxLines="20"
-                            MinWidth="200"
-                            MinHeight="100"
-                            MaxHeight="100"
-                            Margin="0,5,0,0">
+                            <ui:TextBox Grid.Column="0"
+                                x:Name="PromptTextBox"
+                                Text="{Binding Prompt, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                AcceptsReturn="True"
+                                PlaceholderText="Enter your prompt"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                TextWrapping="Wrap"
+                                MaxLines="20"
+                                MinWidth="200"
+                                MinHeight="100"
+                                MaxHeight="100"
+                                Margin="0,5,0,0">
                                 <b:Interaction.Behaviors>
                                     <behaviors:FocusOnLoadBehavior />
-                                    <behaviors:EnterKeyToCommandBehavior 
-                                        Command="{Binding SendPromptCommand, RelativeSource={RelativeSource TemplatedParent}}"/>
+                                    <behaviors:EnterKeyToCommandBehavior Command="{Binding SendPromptCommand, RelativeSource={RelativeSource TemplatedParent}}"/>
                                 </b:Interaction.Behaviors>
                             </ui:TextBox>
                             <StackPanel Grid.Column="1">
                                 <Button Command="{Binding SendPromptCommand, RelativeSource={RelativeSource TemplatedParent}}"
                                         CommandParameter="{Binding Prompt, RelativeSource={RelativeSource TemplatedParent}}"
                                         Margin="5,0,0,0" ToolTipService.ToolTip="Send">
-                                    <StackPanel Orientation="Horizontal">
                                         <ui:SymbolIcon Symbol="Send24" Margin="0,0,5,0"/>
-                                    </StackPanel>
                                 </Button>
                                 <Button Command="{Binding CancelCommand, RelativeSource={RelativeSource TemplatedParent}}"
                                         Margin="5,0,0,0" ToolTipService.ToolTip="Cancel">
-                                    <StackPanel Orientation="Horizontal">
                                         <ui:SymbolIcon Symbol= "Stop24" Margin="0,0,5,0"/>
-                                    </StackPanel>
                                 </Button>
                             </StackPanel>
+
                         </Grid>
 
                         <!-- Loading Spinner -->
-                        <ui:ProgressRing Grid.Row="1" IsIndeterminate="True" 
+                        <ui:ProgressRing Grid.Column="0" Grid.Row="1" IsIndeterminate="True" 
                                          Visibility="{TemplateBinding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" />
 
                     </Grid>

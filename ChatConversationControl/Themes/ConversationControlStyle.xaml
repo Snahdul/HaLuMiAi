@@ -98,15 +98,12 @@
                                 <Button Command="{Binding SendPromptCommand, RelativeSource={RelativeSource TemplatedParent}}"
                                            CommandParameter="{Binding Prompt, RelativeSource={RelativeSource TemplatedParent}}"
                                             Margin="5,0,0,0" ToolTipService.ToolTip="Send">
-                                    <StackPanel Orientation="Horizontal">
-                                        <ui:SymbolIcon Symbol="Send24" Margin="0,0,5,0"/>
-                                    </StackPanel>
+                                            <ui:SymbolIcon Symbol="Send24" Margin="0,0,5,0"/>
+                                    
                                 </Button>
                                 <Button Command="{Binding CancelCommand, RelativeSource={RelativeSource TemplatedParent}}"
                                         Margin="5,0,0,0" ToolTipService.ToolTip="Cancel">
-                                    <StackPanel Orientation="Horizontal">
                                         <ui:SymbolIcon Symbol= "Stop24" Margin="0,0,5,0"/>
-                                    </StackPanel>
                                 </Button>
                             </StackPanel>
 
