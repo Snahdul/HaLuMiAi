@@ -1,6 +1,8 @@
+# Ollama Chat Conversation Control
+
 # ChatConversationControl
 
-ChatConversationControl is a WPF class library designed to manage and interact with chat conversations (Ollama, see settings). It leverages the CommunityToolkit.Mvvm for MVVM architecture and Microsoft.Extensions.AI for AI-based chat functionalities.
+ChatConversationControl is a WPF class library designed to manage and interact with chat conversations using Ollama and Retrieval-Augmented Generation (RAG). It leverages the CommunityToolkit.Mvvm for MVVM architecture and Microsoft.Extensions.AI for AI-based chat functionalities.
 
 ## Features
 
@@ -73,7 +75,11 @@ To run the application, press `F5` or select `Debug > Start Debugging` from the 
 - `ClearConversationAsyncCommand`: Command to clear the conversation.
 - `LoadConversationAsyncCommand`: Command to load a conversation.
 
-## RAG (Retrieval-Augmented Generation)
+## Chat Conversation with Ollama (Pure)
+
+This mode allows for direct interaction with Ollama, providing chat functionalities without additional enhancements.
+
+## Chat Conversation with RAG
 
 RAG is used to enhance the responses by retrieving relevant information from a knowledge base before generating the final response. This helps in providing more accurate and contextually relevant answers.
 
@@ -98,3 +104,4 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 - [CommunityToolkit](https://github.com/CommunityToolkit/dotnet)
 - [Microsoft.Extensions.AI](https://github.com/dotnet/ai-samples/blob/main/src/microsoft-extensions-ai/README.md)
 - [WPF UI](https://github.com/lepoco/wpfui)
+
