@@ -7,6 +7,11 @@
              xmlns:controls="clr-namespace:ChatConversationControl.Controls;assembly=ChatConversationControl"
              xmlns:userControls="clr-namespace:WPFUiDesktopApp.ViewModels.UserControls"
              mc:Ignorable="d" 
+
+             ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+             ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+             Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+
              d:DataContext="{d:DesignInstance userControls:AddFileToMemoryViewModel,
                            IsDesignTimeCreatable=False}"
              d:DesignHeight="450" d:DesignWidth="800">
@@ -16,7 +21,7 @@
             <ui:Button ToolTip="Load File(s) to memory"  Command="{Binding PickFilesCommand}" Margin="0,5,5,0">
                 <ui:SymbolIcon Symbol="ArrowUpload24" Margin="0,0,5,0"/>
             </ui:Button>
-            <Border BorderThickness="10" BorderBrush="Green">
+            <Border BorderThickness="5" BorderBrush="Black" Margin="5">
                 <controls:TagManagementControl Margin="5" 
                                                Tags="{Binding TagManagerViewModel.Tags, Mode=TwoWay}"
                                                Header="Tag Manager"
@@ -24,7 +29,7 @@
                                                RemoveTagCommand="{Binding TagManagerViewModel.RemoveTagCommand}"
                                                />
             </Border>
-            <Border BorderThickness="10" BorderBrush="Green">
+            <Border BorderThickness="5" BorderBrush="Black" Margin="5">
                 <controls:StorageManagementControl Margin="5" 
                                                    Header="Storage Manager"
                                                    StorageIndexes="{Binding StorageManagementViewModel.StorageIndexes}"
