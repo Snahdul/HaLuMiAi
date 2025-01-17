@@ -36,8 +36,8 @@ Ensure you have the following installed:
 2. Open the solution in Visual Studio 2022.
 
 3. Restore the NuGet packages: `dotnet restore`
-
-4. Install the WPF UI library: `dotnet add package Wpf-Ui`
+  
+4. To configure the Ollama settings for the application, you need to update the `appSettings.Production.json` file located in the `WPFUiDesktopApp` directory.
         
 ### Building the Project
 
