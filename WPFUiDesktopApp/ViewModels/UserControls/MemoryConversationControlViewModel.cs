@@ -173,7 +173,7 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
 
     #endregion
 
-    public ICommand HyperlinkRequestNavigateCommand => new AsyncRelayCommand<Citation>(HyperlinkRequestNavigate);
+    public ICommand HyperlinkRequestNavigateCommand => new AsyncRelayCommand<Citation>(HyperlinkRequestNavigateAsync);
 
     public StorageManagementViewModel StorageManagementViewModel { get; }
 
@@ -206,7 +206,7 @@ public partial class MemoryConversationControlViewModel : BaseConversationContro
         }
     }
 
-    private async Task HyperlinkRequestNavigate(Citation? commandParameter)
+    private async Task HyperlinkRequestNavigateAsync(Citation? commandParameter)
     {
         var sourceUrl = commandParameter?.SourceUrl;
 

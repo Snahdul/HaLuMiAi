@@ -12,7 +12,7 @@ public partial class MainWindowViewModel : ObservableObject
     /// Gets or sets the title of the application.
     /// </summary>
     [ObservableProperty]
-    private string _applicationTitle = "WPF UI - UiDesktopApp";
+    private string _applicationTitle = "Ollama RAG";
 
     /// <summary>
     /// Gets or sets the collection of menu items for the navigation view.
@@ -24,14 +24,14 @@ public partial class MainWindowViewModel : ObservableObject
         {
             Content = "Home",
             Icon = new SymbolIcon { Symbol = SymbolRegular.Home24 },
-            TargetPageType = typeof(Views.Pages.DashboardPage)
-        },
-        new NavigationViewItem()
-        {
-            Content = "Ollama",
-            Icon = new SymbolIcon { Symbol = SymbolRegular.Chat24 },
             TargetPageType = typeof(Views.Pages.OllamaPage)
-        }
+        },
+        //new NavigationViewItem()
+        //{
+        //    Content = "Ollama",
+        //    Icon = new SymbolIcon { Symbol = SymbolRegular.Chat24 },
+        //    TargetPageType = typeof(Views.Pages.OllamaPage)
+        //}
     ];
 
     /// <summary>

@@ -5,27 +5,37 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:controls="clr-namespace:ChatConversationControl.Controls;assembly=ChatConversationControl"
+             xmlns:userControls="clr-namespace:WPFUiDesktopApp.ViewModels.UserControls"
              mc:Ignorable="d" 
+             ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+             ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+             Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+
+             d:DataContext="{d:DesignInstance userControls:AddWebpageToMemoryViewModel,
+                         IsDesignTimeCreatable=False}"
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
         <StackPanel Grid.Column="0">
             <ui:TextBox Text="{Binding WebpageUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="Enter URL here." Margin="0,5,5,0"/>
             <ui:Button Content="Load Webpage to memory" Command="{Binding AddWebpageToMemoryCommand}" IsEnabled="true" Margin="0,5,0,0"/>
-            <Border BorderThickness="10" BorderBrush="Green">
+            
                 <StackPanel>
+                    <Border BorderThickness="5" BorderBrush="Black" Margin="5">
                     <controls:TagManagementControl Margin="5" Tags="{Binding TagManagerViewModel.Tags, Mode=TwoWay}"
-                                               Header="Tag Manager"
-                                               AddTagCommand="{Binding TagManagerViewModel.AddTagCommand}"
-                                               RemoveTagCommand="{Binding TagManagerViewModel.RemoveTagCommand}" />
-
-                    <controls:StorageManagementControl
-                    StorageIndexes="{Binding StorageManagementViewModel.StorageIndexes}"
-                    AddIndexCommand="{Binding StorageManagementViewModel.AddIndexCommand}"
-                    RemoveIndexCommand="{Binding StorageManagementViewModel.RemoveIndexCommand}"
-                    SelectedItem="{Binding StorageManagementViewModel.SelectedItem, Mode=TwoWay}"
-                />
+                                                   Header="Tag Manager"
+                                                   AddTagCommand="{Binding TagManagerViewModel.AddTagCommand}"
+                                                   RemoveTagCommand="{Binding TagManagerViewModel.RemoveTagCommand}" />
+                    </Border>
+                    <Border BorderThickness="5" BorderBrush="Black" Margin="5">
+                        <controls:StorageManagementControl Margin="5" 
+                                                           Header="Storage Manager"
+                                                           StorageIndexes="{Binding StorageManagementViewModel.StorageIndexes}"
+                                                           AddIndexCommand="{Binding StorageManagementViewModel.AddIndexCommand}"
+                                                           RemoveIndexCommand="{Binding StorageManagementViewModel.RemoveIndexCommand}"
+                                                           SelectedItem="{Binding StorageManagementViewModel.SelectedItem, Mode=TwoWay}"
+                        />
+                    </Border>
                 </StackPanel>
-        </Border>
         </StackPanel>
     </Grid>
 </UserControl>
